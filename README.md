@@ -35,6 +35,7 @@ Here are the distinctions between Pykemon and PokeBattleSim:
 - Stealth Rock is now taken into account.
 - Defog now clear all hazards on the attacking pokemon side and remove fog from the battlefield.
 - Rapid Spin now clean stealth rocks.
+- Thunder now apply his damage and have correct precision on sun and rain weather.
 
 ## Overview
 
