@@ -256,7 +256,6 @@ def _calculate_hit_or_miss(
         hit_threshold = (
             move_accuracy * stage_mult * battlefield.acc_modifier * item_mult * ability_mult
         )
-        print(precision_result, hit_threshold)
         result_hit = precision_result <= hit_threshold
     if not result_hit:
         if defender.evasion_stage > 0:
@@ -3356,7 +3355,7 @@ def _ef_124(
         return True
 
 
-def _ef_125(
+def _ef_125_smelling_salts(
     attacker: pk.Pokemon,
     defender: pk.Pokemon,
     battlefield: bf.Battlefield,
@@ -3365,15 +3364,11 @@ def _ef_125(
     is_first: bool,
     cc_ib: list,
 ) -> bool:
-    if not defender.is_alive:
-        failed(battle)
-        return True
     if defender.nv_status == gs.PARALYZED:
         move_data.power *= 2
     dmg = _calculate_damage(attacker, defender, battlefield, battle, move_data)
     if defender.is_alive and dmg and defender.nv_status == gs.PARALYZED:
         cure_nv_status(gs.PARALYZED, defender, battle)
-    return True
 
 
 def _ef_126(
@@ -5120,4 +5115,4 @@ def _ef_219(
     attacker.invulnerable = False
 
 
-_MOVE_EFFECTS = [_ef_000, _ef_001, _ef_002, _ef_003, _ef_004, _ef_005, _ef_006, _ef_007, _ef_008, _ef_009, _ef_010, _ef_011, None, _ef_013, _ef_014, None, _ef_016, _ef_017, _ef_018, _ef_019, _ef_020, _ef_021, _ef_022, _ef_023, _ef_024, _ef_025, _ef_026, _ef_027, _ef_028, _ef_029, _ef_030, _ef_031, _ef_032, _ef_033, _ef_034, _ef_035, _ef_036, _ef_037, _ef_038, _ef_039, _ef_040, _ef_041_thunder, _ef_042, _ef_043, _ef_044, None, _ef_046, _ef_047, _ef_048, _ef_049, _ef_050, _ef_051, _ef_052, _ef_053, _ef_054, _ef_055, _ef_056, _ef_057, _ef_058, _ef_059, _ef_060, _ef_061, _ef_062, _ef_063, _ef_064, _ef_065, _ef_066, _ef_067, _ef_068, _ef_069, _ef_070, _ef_071, _ef_072, _ef_073, _ef_074, _ef_075, _ef_076, _ef_077, _ef_078, _ef_079, _ef_080, _ef_081, _ef_082, _ef_083, _ef_084, _ef_085, _ef_086, _ef_087, _ef_088, _ef_089, _ef_090, _ef_091, _ef_092, _ef_093, _ef_094, _ef_095, _ef_096, _ef_097, _ef_098, _ef_099, _ef_100, _ef_101, _ef_102, _ef_103, _ef_104, _ef_105, _ef_106, _ef_107, _ef_108, _ef_109, _ef_110, _ef_111, _ef_112, _ef_113, _ef_114, _ef_115, _ef_116, _ef_117, _ef_118, _ef_119, _ef_120, _ef_121, _ef_122, _ef_123, _ef_124, _ef_125, _ef_126, _ef_127, _ef_128, _ef_129, _ef_130, _ef_131, _ef_132, _ef_133, _ef_134, _ef_135, _ef_136, _ef_137, _ef_138, _ef_139, _ef_140, _ef_141, _ef_142, _ef_143, _ef_144, _ef_145, _ef_146, _ef_147, _ef_148, _ef_149, _ef_150, _ef_151, _ef_152, _ef_153, _ef_154, None, _ef_156, _ef_157, _ef_158, _ef_159, _ef_160, _ef_161, _ef_162, _ef_163, _ef_164, _ef_165, _ef_166, _ef_167, _ef_168, _ef_169, _ef_170, _ef_171, _ef_172, _ef_173, _ef_174, _ef_175, _ef_176, _ef_177, _ef_178, _ef_179, _ef_180, _ef_181, _ef_182, _ef_183, _ef_184, _ef_185, _ef_186, _ef_187, _ef_188, _ef_189, _ef_190, _ef_191, _ef_192, _ef_193, _ef_194, _ef_195, _ef_196, _ef_197, _ef_198, _ef_199, _ef_200, _ef_201, _ef_202, _ef_203, _ef_204, _ef_205, _ef_206, _ef_207, _ef_208, _ef_209, _ef_210, _ef_211, _ef_212, _ef_213, _ef_214, _ef_215, _ef_216, _ef_217, _ef_218, _ef_219]
+_MOVE_EFFECTS = [_ef_000, _ef_001, _ef_002, _ef_003, _ef_004, _ef_005, _ef_006, _ef_007, _ef_008, _ef_009, _ef_010, _ef_011, None, _ef_013, _ef_014, None, _ef_016, _ef_017, _ef_018, _ef_019, _ef_020, _ef_021, _ef_022, _ef_023, _ef_024, _ef_025, _ef_026, _ef_027, _ef_028, _ef_029, _ef_030, _ef_031, _ef_032, _ef_033, _ef_034, _ef_035, _ef_036, _ef_037, _ef_038, _ef_039, _ef_040, _ef_041_thunder, _ef_042, _ef_043, _ef_044, None, _ef_046, _ef_047, _ef_048, _ef_049, _ef_050, _ef_051, _ef_052, _ef_053, _ef_054, _ef_055, _ef_056, _ef_057, _ef_058, _ef_059, _ef_060, _ef_061, _ef_062, _ef_063, _ef_064, _ef_065, _ef_066, _ef_067, _ef_068, _ef_069, _ef_070, _ef_071, _ef_072, _ef_073, _ef_074, _ef_075, _ef_076, _ef_077, _ef_078, _ef_079, _ef_080, _ef_081, _ef_082, _ef_083, _ef_084, _ef_085, _ef_086, _ef_087, _ef_088, _ef_089, _ef_090, _ef_091, _ef_092, _ef_093, _ef_094, _ef_095, _ef_096, _ef_097, _ef_098, _ef_099, _ef_100, _ef_101, _ef_102, _ef_103, _ef_104, _ef_105, _ef_106, _ef_107, _ef_108, _ef_109, _ef_110, _ef_111, _ef_112, _ef_113, _ef_114, _ef_115, _ef_116, _ef_117, _ef_118, _ef_119, _ef_120, _ef_121, _ef_122, _ef_123, _ef_124, _ef_125_smelling_salts, _ef_126, _ef_127, _ef_128, _ef_129, _ef_130, _ef_131, _ef_132, _ef_133, _ef_134, _ef_135, _ef_136, _ef_137, _ef_138, _ef_139, _ef_140, _ef_141, _ef_142, _ef_143, _ef_144, _ef_145, _ef_146, _ef_147, _ef_148, _ef_149, _ef_150, _ef_151, _ef_152, _ef_153, _ef_154, None, _ef_156, _ef_157, _ef_158, _ef_159, _ef_160, _ef_161, _ef_162, _ef_163, _ef_164, _ef_165, _ef_166, _ef_167, _ef_168, _ef_169, _ef_170, _ef_171, _ef_172, _ef_173, _ef_174, _ef_175, _ef_176, _ef_177, _ef_178, _ef_179, _ef_180, _ef_181, _ef_182, _ef_183, _ef_184, _ef_185, _ef_186, _ef_187, _ef_188, _ef_189, _ef_190, _ef_191, _ef_192, _ef_193, _ef_194, _ef_195, _ef_196, _ef_197, _ef_198, _ef_199, _ef_200, _ef_201, _ef_202, _ef_203, _ef_204, _ef_205, _ef_206, _ef_207, _ef_208, _ef_209, _ef_210, _ef_211, _ef_212, _ef_213, _ef_214, _ef_215, _ef_216, _ef_217, _ef_218, _ef_219]
