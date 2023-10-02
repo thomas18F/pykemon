@@ -504,8 +504,8 @@ class Battle:
             poke.magic_coat = False
         if poke.snatch:
             poke.snatch = False
-        if poke.sp_check:
-            poke.sp_check = False
+        if poke.sucker_punch_check:
+            poke.sucker_punch_check = False
         if not poke.has_moved:
             poke.has_moved = True
         if poke.v_status[gs.DROWSY]:
@@ -793,9 +793,9 @@ class Battle:
         if not t1_move_data or not t2_move_data:
             return
         if t1_move_data.name == "sucker-punch" and t2_move_data.category != gs.STATUS:
-            self.t1.current_poke.sp_check = True
+            self.t1.current_poke.sucker_punch_check = True
         if t2_move_data.name == "sucker-punch" and t1_move_data.category != gs.STATUS:
-            self.t1.current_poke.sp_check = True
+            self.t1.current_poke.sucker_punch_check = True
 
     def _pressure_check(self, attacker: pk.Pokemon, move_data: Move):
         if (

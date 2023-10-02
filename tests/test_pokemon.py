@@ -83,6 +83,34 @@ class TestPokemon(unittest.TestCase):
             Pokemon(25, 22, ['tackle'], 'male', stats_actual=[0, 100, 100, 100, 100, 100])
         self.assertEqual(str(context.exception), "Attempted to create Pokemon with invalid stats")
 
+    def test_initialize_pokemon_with_one_max_hp(self):
+        pokemon = Pokemon(25, 22, ['tackle'], 'male', stats_actual=[1, 100, 100, 100, 100, 100])
+
+        self.assertEqual(pokemon.id, 25)
+        self.assertEqual(pokemon.name, 'pikachu')
+        self.assertEqual(pokemon.nickname, 'PIKACHU')
+        self.assertEqual(pokemon.gender, 'male')
+        self.assertEqual(pokemon.level, 22)
+        self.assertEqual(pokemon.types, ('electric', ''))
+        self.assertEqual(pokemon.cur_hp, 1)
+        self.assertEqual(pokemon.max_hp, 1)
+        self.assertEqual(pokemon.stats_actual, [1, 100, 100, 100, 100, 100])
+        self.assertIsNone(pokemon.trainer)
+
+    def test_initialize_shedinja(self):
+        pokemon = Pokemon(292, 22, ['tackle'], 'male', ivs=[16, 16, 16, 16, 16, 16], evs=[0, 0, 0, 0, 0, 0], nature="quirky")
+
+        self.assertEqual(pokemon.id, 292)
+        self.assertEqual(pokemon.name, 'shedinja')
+        self.assertEqual(pokemon.nickname, 'SHEDINJA')
+        self.assertEqual(pokemon.gender, 'male')
+        self.assertEqual(pokemon.level, 22)
+        self.assertEqual(pokemon.types, ('bug', 'ghost'))
+        self.assertEqual(pokemon.cur_hp, 1)
+        self.assertEqual(pokemon.max_hp, 1)
+        self.assertEqual(pokemon.stats_actual, [1, 48, 28, 21, 18, 26])
+        self.assertIsNone(pokemon.trainer)
+
     def test_initialize_pokemon_with_cur_hp(self):
         pokemon = Pokemon(25, 22, ['tackle'], 'male', stats_actual=[150, 100, 100, 100, 100, 100], cur_hp=100)
 

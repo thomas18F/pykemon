@@ -41,6 +41,35 @@ class TestBattle(unittest.TestCase):
         self.assertEqual(battle.get_all_text(), expected_battle_text)
         self.assertEqual(battle.battlefield.get_terrain(), 'other')
 
+    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    def test_pokemon_nickname_usage(self, mock_calculate_crit):
+        pokemon_1 = Pokemon(1, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 1], nickname="from Ash")
+        trainer_1 = Trainer('Ash', [pokemon_1])
+
+        pokemon_2 = Pokemon(4, 22, ["tackle"], "male", stats_actual=[1, 100, 100, 100, 100, 100], nickname="from Misty")
+        trainer_2 = Trainer('Misty', [pokemon_2])
+
+        battle = Battle(trainer_1, trainer_2)
+        battle.start()
+
+        mock_calculate_crit.return_value = False
+        battle.turn(["move", "tackle"], ["move", "tackle"])
+
+        expected_battle_text = [
+            'Ash sent out FROM ASH!',
+            'Misty sent out FROM MISTY!',
+            'Turn 1:',
+            'FROM MISTY used Tackle!',
+            'FROM ASH used Tackle!',
+            'FROM MISTY fainted!',
+            'Ash has defeated Misty!'
+        ]
+
+        self.assertEqual(battle.t1, trainer_1)
+        self.assertEqual(battle.t2, trainer_2)
+        self.assertEqual(battle.turn_count, 1)
+        self.assertEqual(battle.get_all_text(), expected_battle_text)
+
     def test_battle_with_terrain(self):
         pokemon_1 = Pokemon(1, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
         trainer_1 = Trainer('Ash', [pokemon_1])

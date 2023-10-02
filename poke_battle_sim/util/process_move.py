@@ -4794,7 +4794,7 @@ def _ef_201(
     is_first: bool,
     cc_ib: list,
 ) -> bool:
-    if not is_first or not attacker.sp_check:
+    if not is_first or not attacker.sucker_punch_check:
         failed(battle)
         return True
 

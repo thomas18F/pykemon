@@ -210,6 +210,8 @@ class Pokemon:
                 )
                 * nature_stat_changes[s]
             )
+        if self.name == "shedinja":
+            stats_actual[0] = 1.0
         self.stats_actual = [int(stat) for stat in stats_actual]
 
     def calculate_stats_effective(self, ignore_stats: bool = False):
@@ -296,7 +298,7 @@ class Pokemon:
         self.ability_suppressed = False
         self.ability_activated = False
         self.item_activated = False
-        self.sp_check = False
+        self.sucker_punch_check = False
         self.magnet_rise = False
         self.has_moved = False
         self.prio_boost = False
@@ -353,7 +355,7 @@ class Pokemon:
             self.bide_dmg += damage
         if self.cur_hp - damage <= 0:
             self.last_damage_taken = self.cur_hp
-            if self._endure_check() or self._fband_check() or self._fsash_check():
+            if self._endure_check() or self._focus_band_check() or self._focus_sash_check():
                 self.cur_hp = 1
                 return self.last_damage_taken - 1
             self._db_check()
@@ -604,13 +606,13 @@ class Pokemon:
             return True
         return False
 
-    def _fband_check(self) -> bool:
+    def _focus_band_check(self) -> bool:
         if self.item == "focus-band" and randrange(10) < 1:
             self.cur_battle.add_text(self.nickname + " hung on using its Focus Band!")
             return True
         return False
 
-    def _fsash_check(self) -> bool:
+    def _focus_sash_check(self) -> bool:
         if (
             self.item == "focus-sash"
             and self.cur_hp == self.max_hp
