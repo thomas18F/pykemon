@@ -59,7 +59,7 @@ class Trainer:
         self.name = name
         self.in_battle = False
 
-    def start_pokemon(self, battle: bt.Battle):
+    def start(self, battle: bt.Battle):
         for poke in self.poke_list:
             poke.start_battle(battle)
         self.current_poke = self.poke_list[0]
@@ -80,7 +80,7 @@ class Trainer:
         self.num_fainted = 0
         self.wish_poke = None
         self.imprisoned_poke = None
-        self.in_battle = False
+        self.in_battle = True
         self.has_moved = False
 
     def is_valid_action(self, action: list[str]) -> bool:
@@ -91,13 +91,15 @@ class Trainer:
         if action == gd.SWITCH:
             return self.can_switch_out()
         if action[gs.ACTION_TYPE] == gd.ITEM:
-            return self.can_use_move(action)
+            return self.can_use_item(action)
         return False
 
     def can_switch_out(self) -> bool:
+        self._must_be_in_battle()
         return self.current_poke.can_switch_out()
 
     def can_use_item(self, item_action: list[str]) -> bool:
+        self._must_be_in_battle()
         if (
             not isinstance(item_action, list)
             or not isinstance(item_action[gs.ACTION_TYPE], str)
@@ -122,6 +124,7 @@ class Trainer:
         return False
 
     def can_use_move(self, move_action: list[str]) -> bool:
+        self._must_be_in_battle()
         if (
             not isinstance(move_action, list)
             or not isinstance(move_action[gs.ACTION_TYPE], str)
@@ -136,3 +139,7 @@ class Trainer:
                 ]
             )
         return False
+
+    def _must_be_in_battle(self):
+        if not self.in_battle:
+            raise Exception("Trainer must be in battle")

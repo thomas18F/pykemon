@@ -16,6 +16,8 @@ Here are the distinctions between Pykemon and PokeBattleSim:
 - Possibility to create a battle with a weather.
 
 #### Fixes
+- The is_valid_action function now ask the correct test function for item action.
+- Public function now verify that Trainer or Pokemon are initialized to throw custom error if needed.
 - Pokemons can now be initialized with id.
 - Damage calculations now occurs only once.
 - A pokemon can now have only one max HP (particularly useful for Shedinja).

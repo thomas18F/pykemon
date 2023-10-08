@@ -1029,7 +1029,6 @@ def _ef_001(
     cc_ib: list,
 ) -> bool:
     _calculate_damage(attacker, defender, battlefield, battle, move_data)
-    return True
 
 
 def _ef_002(

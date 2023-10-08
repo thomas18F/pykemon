@@ -558,6 +558,7 @@ class Pokemon:
         )
 
     def can_switch_out(self) -> bool:
+        self._must_be_in_battle()
         if self.item == "shed-shell":
             return True
         if (
@@ -588,6 +589,7 @@ class Pokemon:
         return True
 
     def can_use_item(self) -> bool:
+        self._must_be_in_battle()
         return not self.embargo_count
 
     def has_ability(self, ability_name: str) -> bool:
@@ -682,3 +684,7 @@ class Pokemon:
         for move in self.moves:
             move.cur_pp = min(move.cur_pp + amount, move.max_pp)
         self.cur_battle.add_text(self.nickname + "'s move's pp were restored!")
+
+    def _must_be_in_battle(self):
+        if not self.in_battle:
+            raise Exception("Pokemon must be in battle")

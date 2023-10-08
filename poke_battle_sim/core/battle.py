@@ -55,10 +55,8 @@ class Battle:
         self.battlefield = bf.Battlefield(self, terrain=terrain, weather=weather)
 
     def start(self):
-        self.t1.start_pokemon(self)
-        self.t2.start_pokemon(self)
-        self.t1.in_battle = True
-        self.t2.in_battle = True
+        self.t1.start(self)
+        self.t2.start(self)
         self.t1_faint = False
         self.t2_faint = False
         self.battle_started = True

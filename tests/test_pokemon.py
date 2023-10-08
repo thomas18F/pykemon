@@ -213,6 +213,13 @@ class TestPokemon(unittest.TestCase):
         self.assertEqual(pokemon.stats_actual, [100, 100, 100, 100, 100, 100])
         self.assertIsNone(pokemon.trainer)
 
+    def test_can_switch_out_test_use_on_unstarted_trainer(self):
+        pokemon = Pokemon(25, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
+
+        with self.assertRaises(Exception) as context:
+            pokemon.can_switch_out()
+        self.assertEqual(str(context.exception), "Pokemon must be in battle")
+
 
 if __name__ == '__main__':
     unittest.main()
