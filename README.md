@@ -20,6 +20,9 @@ Here are the distinctions between Pykemon and PokeBattleSim:
 - Public function now verify that Trainer or Pokemon are initialized to throw custom error if needed.
 - Pokemons can now be initialized with id.
 - Damage calculations now occurs only once.
+- Precision modifier items now correctly modify the precision.
+- Thick Fat ability now reduce damage instead of reducing precision of the move.
+- Compound Eyes precision boost is now correctly applied.
 - A pokemon can now have only one max HP (particularly useful for Shedinja).
 - A pokemon can't be used multiple time in a same team anymore.
 - Max EVs are decreased to 252 instead of 255, as it may be consider a bug patched in games after the 6th generation.

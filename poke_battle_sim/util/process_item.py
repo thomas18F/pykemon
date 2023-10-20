@@ -546,7 +546,7 @@ def on_hit_items(
             attacker.give_item("sticky-barb")
 
 
-def homc_items(
+def calculate_precision_modifier_items(
     attacker: pk.Pokemon,
     defender: pk.Pokemon,
     battlefield: bf.Battlefield,
@@ -556,24 +556,16 @@ def homc_items(
 ) -> float:
     i_mult = 1
 
-    if (
-        defender.item not in gd.HOMC_ITEM_CHECK
-        or defender.has_ability("klutz")
-        or defender.embargo_count
-    ) and (
-        attacker.item not in gd.HOMC_ITEM_CHECK
-        or attacker.has_ability("klutz")
-        or attacker.embargo_count
-    ):
-        return i_mult
-
-    if defender.item == "brightpowder" or defender.item == "lax-incense":
+    if (defender.item == "brightpowder" or defender.item == "lax-incense") and \
+            not defender.has_ability("klutz") and \
+            not defender.embargo_count:
         i_mult *= 0.9
 
-    if attacker.item == "wide-lens":
-        i_mult *= 1.1
-    elif attacker.item == "zoom-lens" and not is_first:
-        i_mult *= 1.2
+    if not attacker.has_ability("klutz") and not attacker.embargo_count:
+        if attacker.item == "wide-lens":
+            i_mult *= 1.1
+        elif attacker.item == "zoom-lens" and not is_first:
+            i_mult *= 1.2
 
     return i_mult
 

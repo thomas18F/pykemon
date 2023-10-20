@@ -352,7 +352,7 @@ def damage_calc_abilities(
         move_data.power *= 0.75
 
 
-def homc_abilities(
+def calculate_precision_modifier_abilities(
     attacker: pk.Pokemon,
     defender: pk.Pokemon,
     battlefield: bf.Battlefield,
@@ -364,15 +364,11 @@ def homc_abilities(
         ability_mult *= 0.8
     elif defender.has_ability("snow-cloak") and battlefield.weather == gs.HAIL:
         ability_mult *= 0.8
-    elif defender.has_ability("compound-eyes"):
+    elif attacker.has_ability("compound-eyes"):
         ability_mult *= 1.3
     elif defender.has_ability("hustle") and move_data.category == gs.PHYSICAL:
         ability_mult *= 0.8
     elif defender.has_ability("tangled-feet") and defender.v_status[gs.CONFUSED]:
-        ability_mult *= 0.5
-    elif defender.has_ability("thick-fat") and (
-        move_data.type == "fire" or move_data.type == "ice"
-    ):
         ability_mult *= 0.5
     return ability_mult
 

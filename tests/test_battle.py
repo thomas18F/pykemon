@@ -2203,6 +2203,116 @@ class TestBattle(unittest.TestCase):
         self.assertEqual(battle.turn_count, 1)
         self.assertIsNone(battle.winner)
 
+    @patch('poke_battle_sim.util.process_move.give_nv_status')
+    @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
+    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    def test_flamethrower(self, mock_calculate_crit, mock_calculate_multiplier, mock_status):
+        pokemon_1 = Pokemon(1, 22, ["flamethrower"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
+        trainer_1 = Trainer('Ash', [pokemon_1])
+
+        pokemon_2 = Pokemon(4, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
+        trainer_2 = Trainer('Misty', [pokemon_2])
+
+        battle = Battle(trainer_1, trainer_2)
+        battle.start()
+
+        mock_calculate_crit.return_value = False
+        mock_calculate_multiplier.return_value = 1.0
+        battle.turn(["move", "flamethrower"], ["move", "tackle"])
+
+        expected_battle_text = [
+            'Ash sent out BULBASAUR!',
+            'Misty sent out CHARMANDER!',
+            'Turn 1:',
+            'BULBASAUR used Flamethrower!',
+            "It's not very effective...",
+            'CHARMANDER used Tackle!'
+        ]
+
+        self.assertEqual(pokemon_2.cur_hp, 90)
+
+        self.assertTrue(battle.battle_started)
+        self.assertEqual(battle.t1, trainer_1)
+        self.assertEqual(battle.t2, trainer_2)
+        self.assertEqual(battle.turn_count, 1)
+        self.assertIsNone(battle.winner)
+        self.assertEqual(battle.get_all_text(), expected_battle_text)
+
+    @patch('poke_battle_sim.util.process_move.give_nv_status')
+    @patch('poke_battle_sim.util.process_move.get_move_precision')
+    @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
+    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    def test_flamethrower(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision, mock_status):
+        pokemon_1 = Pokemon(1, 22, ["flamethrower"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
+        trainer_1 = Trainer('Ash', [pokemon_1])
+
+        pokemon_2 = Pokemon(4, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
+        trainer_2 = Trainer('Misty', [pokemon_2])
+
+        battle = Battle(trainer_1, trainer_2)
+        battle.start()
+
+        mock_calculate_crit.return_value = False
+        mock_calculate_multiplier.return_value = 1.0
+        mock_move_precision.return_value = 99
+        battle.turn(["move", "flamethrower"], ["move", "tackle"])
+
+        expected_battle_text = [
+            'Ash sent out BULBASAUR!',
+            'Misty sent out CHARMANDER!',
+            'Turn 1:',
+            'BULBASAUR used Flamethrower!',
+            "It's not very effective...",
+            'CHARMANDER used Tackle!'
+        ]
+
+        self.assertEqual(pokemon_2.cur_hp, 90)
+
+        self.assertTrue(battle.battle_started)
+        self.assertEqual(battle.t1, trainer_1)
+        self.assertEqual(battle.t2, trainer_2)
+        self.assertEqual(battle.turn_count, 1)
+        self.assertIsNone(battle.winner)
+        self.assertEqual(battle.get_all_text(), expected_battle_text)
+
+    @patch('poke_battle_sim.util.process_move.give_nv_status')
+    @patch('poke_battle_sim.util.process_move.get_move_precision')
+    @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
+    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    def test_flamethrower_on_thick_fat(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision, mock_status):
+        pokemon_1 = Pokemon(1, 22, ["flamethrower"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
+        trainer_1 = Trainer('Ash', [pokemon_1])
+
+        pokemon_2 = Pokemon(4, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 1], ability="thick-fat")
+        trainer_2 = Trainer('Misty', [pokemon_2])
+
+        battle = Battle(trainer_1, trainer_2)
+        battle.start()
+
+        mock_calculate_crit.return_value = False
+        mock_calculate_multiplier.return_value = 1.0
+        mock_move_precision.return_value = 99
+        battle.turn(["move", "flamethrower"], ["move", "tackle"])
+
+        expected_battle_text = [
+            'Ash sent out BULBASAUR!',
+            'Misty sent out CHARMANDER!',
+            'Turn 1:',
+            'BULBASAUR used Flamethrower!',
+            "It's not very effective...",
+            'CHARMANDER used Tackle!'
+        ]
+
+        self.assertEqual(battle.get_all_text(), expected_battle_text)
+
+        self.assertEqual(pokemon_2.cur_hp, 95)
+
+        self.assertTrue(battle.battle_started)
+        self.assertEqual(battle.t1, trainer_1)
+        self.assertEqual(battle.t2, trainer_2)
+        self.assertEqual(battle.turn_count, 1)
+        self.assertIsNone(battle.winner)
+
 
 if __name__ == '__main__':
     unittest.main()

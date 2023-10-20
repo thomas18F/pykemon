@@ -64,8 +64,6 @@ STATUS_ITEM_CHECK = {'cheri-berry', 'chesto-berry', 'pecha-berry', 'rawst-berry'
 
 ON_HIT_ITEM_CHECK = {'jaboca-berry', 'rowap-berry', 'sticky-barb'}
 
-HOMC_ITEM_CHECK = {'brightpowder', 'lax-incense', 'wide-lens', 'zoom-lens'}
-
 END_TURN_ITEM_CHECK = {'oran-berry', 'sitrus-berry', 'figy-berry', 'wiki-berry', 'mago-berry', 'aguav-berry', 'iapapa-berry', 'leftovers', 'black-sludge', 'toxic-orb', 'flame-orb', 'sticky-barb'}
 
 POST_DAMAGE_ITEM_CHECK = {'shell-bell', 'life-orb'}

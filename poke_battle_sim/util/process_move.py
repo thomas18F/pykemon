@@ -155,6 +155,8 @@ def _calculate_damage(
         move_data.power //= 2
     if move_data.type == "fire" and (attacker.water_sport or defender.water_sport):
         move_data.power //= 2
+    if defender.has_ability("thick-fat") and (move_data.type == "fire" or move_data.type == "ice"):
+        move_data.power //= 2
     pa.damage_calc_abilities(attacker, defender, battle, move_data, t_mult)
     pi.damage_calc_items(attacker, defender, battle, move_data)
 
@@ -217,21 +219,21 @@ def _calculate_hit_or_miss(
     move_data: Move,
     is_first: bool,
 ):
-    d_eva_stage = defender.evasion_stage
-    a_acc_stage = attacker.accuracy_stage
+    defender_evasion_stage = defender.evasion_stage
+    attacker_accuracy_stage = attacker.accuracy_stage
     if defender.foresight_target or defender.me_target:
         if defender.evasion_stage > 0:
-            d_eva_stage = 0
+            defender_evasion_stage = 0
     if attacker.has_ability("unaware"):
-        d_eva_stage = 0
+        defender_evasion_stage = 0
     if defender.has_ability("unaware"):
-        a_acc_stage = 0
+        attacker_accuracy_stage = 0
     if move_data.name == "stomp" and defender.minimized:
-        d_eva_stage = 0
-    stage = a_acc_stage - d_eva_stage
+        defender_evasion_stage = 0
+    stage = attacker_accuracy_stage - defender_evasion_stage
     stage_mult = max(3, 3 + stage) / max(3, 3 - stage)
-    ability_mult = pa.homc_abilities(attacker, defender, battlefield, battle, move_data)
-    item_mult = pi.homc_items(
+    ability_mult = pa.calculate_precision_modifier_abilities(attacker, defender, battlefield, battle, move_data)
+    item_mult = pi.calculate_precision_modifier_items(
         attacker, defender, battlefield, battle, move_data, is_first
     )
 
