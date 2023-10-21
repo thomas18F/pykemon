@@ -33,7 +33,7 @@ Here are the distinctions between Pykemon and PokeBattleSim:
 - Weather ball move now use rock type on sandstorm.
 - Embargo mechanics now cancel item usage as intended.
 - Nature Power now launch by default Tri Attack or the move associated with the terrain defined in the battle.
-- Earthquake, Gust and Surf damages are now calculated.
+- Hyper Beam, Blast Burn, Hydro Cannon, Frenzy Plant, Giga Impact, Rock Wrecker, Roar Of Time, Earthquake, Gust and Surf damages are now calculated.
 - Whirlpool and Low Kick now deal double damage on under water pokemons.
 - Heal Block now work as intended.
 - Stomp now break through opponent evasion if caused by Minimize.

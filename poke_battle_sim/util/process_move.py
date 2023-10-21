@@ -1592,6 +1592,7 @@ def _ef_034(
     is_first: bool,
     cc_ib: list,
 ) -> bool:
+    _calculate_damage(attacker, defender, battlefield, battle, move_data)
     attacker.recharging = True
 
 

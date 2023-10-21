@@ -538,6 +538,23 @@ class TestBattle(unittest.TestCase):
         self.assertEqual(battle.get_all_text(), expected_battle_text)
         self.assertEqual(battle.t1.current_poke, pokemon_2)
 
+    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    def test_wrong_action_type(self, mock_calculate_crit):
+        with self.assertRaises(Exception) as context:
+            pokemon_1 = Pokemon(1, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
+            trainer_1 = Trainer('Ash', [pokemon_1])
+
+            pokemon_2 = Pokemon(5, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
+            trainer_2 = Trainer('Misty', [pokemon_2])
+
+            battle = Battle(trainer_1, trainer_2)
+            battle.start()
+
+            mock_calculate_crit.return_value = False
+            battle.turn(["another command", "switch"], ["move", "tackle"])
+
+        self.assertEqual(str(context.exception), "Trainer 1 invalid turn action")
+
     def test_switch_out_with_one_pokemon_in_team(self):
         with self.assertRaises(Exception) as context:
             pokemon_1 = Pokemon(1, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
@@ -2311,6 +2328,98 @@ class TestBattle(unittest.TestCase):
         self.assertEqual(battle.t1, trainer_1)
         self.assertEqual(battle.t2, trainer_2)
         self.assertEqual(battle.turn_count, 1)
+        self.assertIsNone(battle.winner)
+
+    @patch('poke_battle_sim.util.process_move.get_move_precision')
+    @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
+    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    def test_hyper_beam(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision):
+        pokemon_1 = Pokemon(1, 22, ["splash", "hyper-beam"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
+        trainer_1 = Trainer('Ash', [pokemon_1])
+
+        pokemon_2 = Pokemon(4, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
+        trainer_2 = Trainer('Misty', [pokemon_2])
+
+        battle = Battle(trainer_1, trainer_2)
+        battle.start()
+
+        mock_calculate_crit.return_value = False
+        mock_calculate_multiplier.return_value = 1.0
+        mock_move_precision.return_value = 90
+        battle.turn(["move", "hyper-beam"], ["move", "tackle"])
+
+        self.assertTrue(pokemon_1.recharging)
+
+        battle.turn(["move", "splash"], ["move", "tackle"])
+
+        self.assertFalse(pokemon_1.recharging)
+
+        expected_battle_text = [
+            'Ash sent out BULBASAUR!',
+            'Misty sent out CHARMANDER!',
+            'Turn 1:',
+            'BULBASAUR used Hyper Beam!',
+            'CHARMANDER used Tackle!',
+            'Turn 2:',
+            'BULBASAUR must recharge!',
+            'CHARMANDER used Tackle!'
+        ]
+
+        self.assertEqual(battle.get_all_text(), expected_battle_text)
+
+        self.assertEqual(pokemon_2.cur_hp, 66)
+
+        self.assertTrue(battle.battle_started)
+        self.assertEqual(battle.t1, trainer_1)
+        self.assertEqual(battle.t2, trainer_2)
+        self.assertEqual(battle.turn_count, 2)
+        self.assertIsNone(battle.winner)
+
+    @patch('poke_battle_sim.util.process_move.get_move_precision')
+    @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
+    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    def test_hyper_beam_miss(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision):
+        pokemon_1 = Pokemon(1, 22, ["splash", "hyper-beam"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
+        trainer_1 = Trainer('Ash', [pokemon_1])
+
+        pokemon_2 = Pokemon(4, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
+        trainer_2 = Trainer('Misty', [pokemon_2])
+
+        battle = Battle(trainer_1, trainer_2)
+        battle.start()
+
+        mock_calculate_crit.return_value = False
+        mock_calculate_multiplier.return_value = 1.0
+        mock_move_precision.return_value = 91
+        battle.turn(["move", "hyper-beam"], ["move", "tackle"])
+
+        self.assertFalse(pokemon_1.recharging)
+
+        battle.turn(["move", "splash"], ["move", "tackle"])
+
+        self.assertFalse(pokemon_1.recharging)
+
+        expected_battle_text = [
+            'Ash sent out BULBASAUR!',
+            'Misty sent out CHARMANDER!',
+            'Turn 1:',
+            'BULBASAUR used Hyper Beam!',
+            "BULBASAUR's attack missed!",
+            'CHARMANDER used Tackle!',
+            'Turn 2:',
+            'BULBASAUR used Splash!',
+            'But nothing happened!',
+            'CHARMANDER used Tackle!'
+        ]
+
+        self.assertEqual(battle.get_all_text(), expected_battle_text)
+
+        self.assertEqual(pokemon_2.cur_hp, 100)
+
+        self.assertTrue(battle.battle_started)
+        self.assertEqual(battle.t1, trainer_1)
+        self.assertEqual(battle.t2, trainer_2)
+        self.assertEqual(battle.turn_count, 2)
         self.assertIsNone(battle.winner)
 
 
