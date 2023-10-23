@@ -41,6 +41,7 @@ Here are the distinctions between Pykemon and PokeBattleSim:
 - Defog now clear all hazards on the attacking pokemon side and remove fog from the battlefield.
 - Rapid Spin now clean stealth rocks.
 - Thunder now apply his damage and have correct precision on sun and rain weather.
+- Seismic Toss and Night Shade can't hit invulnerable pokemon anymore and display the correct message when attack is avoided.
 
 ## Overview
 

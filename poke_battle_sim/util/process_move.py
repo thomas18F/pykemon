@@ -98,12 +98,13 @@ def _calculate_damage(
     if not inv_bypass and _invulnerability_check(
         attacker, defender, battlefield, battle, move_data
     ):
+        _avoided(battle, defender)
         return
     if not move_data.power:
         return
     t_mult = calculate_type_ef(defender, move_data)
     if not skip_txt and not t_mult or (t_mult < 2 and defender.has_ability("wonder-guard")):
-        battle.add_text("It doesn't affect " + defender.nickname)
+        _not_affected(battle, defender)
         return
     if pa.type_protection_abilities(defender, move_data, battle):
         return
@@ -261,7 +262,7 @@ def _calculate_hit_or_miss(
         result_hit = precision_result <= hit_threshold
     if not result_hit:
         if defender.evasion_stage > 0:
-            battle.add_text(defender.nickname + " avoided the attack!")
+            _avoided(battle, defender)
         else:
             _missed(attacker, battle)
     return result_hit
@@ -898,7 +899,7 @@ def _soundproof_check(defender: pk.Pokemon, battle: bt.Battle, move_data: Move) 
         and defender.has_ability("soundproof")
         and move_data in gd.SOUNDPROOF_CHECK
     ):
-        battle.add_text("It doesn't affect " + defender.nickname)
+        _not_affected(battle, defender)
         return True
     return False
 
@@ -999,6 +1000,14 @@ def failed(battle: bt.Battle):
 
 def _missed(attacker: pk.Pokemon, battle: bt.Battle):
     battle.add_text(attacker.nickname + "'s attack missed!")
+
+
+def _avoided(battle: bt.Battle, defender: pk.Pokemon):
+    battle.add_text(defender.nickname + " avoided the attack!")
+
+
+def _not_affected(battle: bt.Battle, defender: pk.Pokemon):
+    battle.add_text("It doesn't affect " + defender.nickname)
 
 
 def _safeguard_check(poke: pk.Pokemon, battle: bt.Battle) -> bool:
@@ -1312,7 +1321,7 @@ def _ef_020(
         if not defender.is_alive:
             battle.add_text("It's a one-hit KO!")
     else:
-        battle.add_text("It doesn't affect " + defender.nickname)
+        _not_affected(battle, defender)
     return True
 
 
@@ -1653,11 +1662,14 @@ def _ef_037(
     cc_ib: list,
 ) -> bool:
     if calculate_type_ef(defender, move_data):
-        if defender.is_alive:
-            defender.take_damage(attacker.level, move_data)
-        else:
+        if not defender.is_alive:
             _missed(attacker, battle)
-    return True
+        elif defender.invulnerable:
+            _avoided(battle, defender)
+        else:
+            defender.take_damage(attacker.level, move_data)
+    else:
+        _not_affected(battle, defender)
 
 
 def _ef_038(
