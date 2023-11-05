@@ -2688,6 +2688,548 @@ class TestBattle(unittest.TestCase):
         self.assertIsNone(battle.winner)
         self.assertEqual(battle.get_all_text(), expected_battle_text)
 
+    @patch('poke_battle_sim.util.process_move.get_move_precision')
+    def test_sand_attack(self, mock_move_precision):
+        pokemon_1 = Pokemon(1, 22, ["sand-attack"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
+        trainer_1 = Trainer('Ash', [pokemon_1])
+
+        pokemon_2 = Pokemon(4, 22, ["splash"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
+        trainer_2 = Trainer('Misty', [pokemon_2])
+
+        battle = Battle(trainer_1, trainer_2)
+        battle.start()
+
+        mock_move_precision.return_value = 99
+        battle.turn(["move", "sand-attack"], ["move", "splash"])
+
+        expected_battle_text = [
+            'Ash sent out BULBASAUR!',
+            'Misty sent out CHARMANDER!',
+            'Turn 1:',
+            'BULBASAUR used Sand Attack!',
+            "CHARMANDER's accuracy fell!",
+            'CHARMANDER used Splash!',
+            'But nothing happened!'
+        ]
+
+        self.assertEqual(pokemon_2.cur_hp, 100)
+        self.assertEqual(pokemon_2.evasion_stage, 0)
+        self.assertEqual(pokemon_2.accuracy_stage, -1)
+
+        self.assertTrue(battle.battle_started)
+        self.assertEqual(battle.t1, trainer_1)
+        self.assertEqual(battle.t2, trainer_2)
+        self.assertEqual(battle.turn_count, 1)
+        self.assertIsNone(battle.winner)
+        self.assertEqual(battle.get_all_text(), expected_battle_text)
+
+    @patch('poke_battle_sim.util.process_move.get_move_precision')
+    def test_sand_attack_on_fly_pokemon(self, mock_move_precision):
+        pokemon_1 = Pokemon(1, 22, ["sand-attack"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
+        trainer_1 = Trainer('Ash', [pokemon_1])
+
+        pokemon_2 = Pokemon(16, 22, ["splash"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
+        trainer_2 = Trainer('Misty', [pokemon_2])
+
+        battle = Battle(trainer_1, trainer_2)
+        battle.start()
+
+        mock_move_precision.return_value = 99
+        battle.turn(["move", "sand-attack"], ["move", "splash"])
+
+        expected_battle_text = [
+            'Ash sent out BULBASAUR!',
+            'Misty sent out PIDGEY!',
+            'Turn 1:',
+            'BULBASAUR used Sand Attack!',
+            "PIDGEY's accuracy fell!",
+            'PIDGEY used Splash!',
+            'But nothing happened!'
+        ]
+
+        self.assertEqual(pokemon_2.cur_hp, 100)
+        self.assertEqual(pokemon_2.evasion_stage, 0)
+        self.assertEqual(pokemon_2.accuracy_stage, -1)
+
+        self.assertTrue(battle.battle_started)
+        self.assertEqual(battle.t1, trainer_1)
+        self.assertEqual(battle.t2, trainer_2)
+        self.assertEqual(battle.turn_count, 1)
+        self.assertIsNone(battle.winner)
+        self.assertEqual(battle.get_all_text(), expected_battle_text)
+
+    @patch('poke_battle_sim.util.process_move.get_move_precision')
+    def test_sand_attack_on_levitating_pokemon(self, mock_move_precision):
+        pokemon_1 = Pokemon(1, 22, ["sand-attack"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
+        trainer_1 = Trainer('Ash', [pokemon_1])
+
+        pokemon_2 = Pokemon(4, 22, ["splash"], "male", stats_actual=[100, 100, 100, 100, 100, 1], ability="levitate")
+        trainer_2 = Trainer('Misty', [pokemon_2])
+
+        battle = Battle(trainer_1, trainer_2)
+        battle.start()
+
+        mock_move_precision.return_value = 99
+        battle.turn(["move", "sand-attack"], ["move", "splash"])
+
+        expected_battle_text = [
+            'Ash sent out BULBASAUR!',
+            'Misty sent out CHARMANDER!',
+            'Turn 1:',
+            'BULBASAUR used Sand Attack!',
+            "CHARMANDER's accuracy fell!",
+            'CHARMANDER used Splash!',
+            'But nothing happened!'
+        ]
+
+        self.assertEqual(pokemon_2.cur_hp, 100)
+        self.assertEqual(pokemon_2.evasion_stage, 0)
+        self.assertEqual(pokemon_2.accuracy_stage, -1)
+
+        self.assertTrue(battle.battle_started)
+        self.assertEqual(battle.t1, trainer_1)
+        self.assertEqual(battle.t2, trainer_2)
+        self.assertEqual(battle.turn_count, 1)
+        self.assertIsNone(battle.winner)
+        self.assertEqual(battle.get_all_text(), expected_battle_text)
+
+    @patch('poke_battle_sim.util.process_move.get_move_precision')
+    @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
+    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    def test_fly(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision):
+        pokemon_1 = Pokemon(1, 22, ["fly"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
+        trainer_1 = Trainer('Ash', [pokemon_1])
+
+        pokemon_2 = Pokemon(4, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
+        trainer_2 = Trainer('Misty', [pokemon_2])
+
+        battle = Battle(trainer_1, trainer_2)
+        battle.start()
+
+        mock_calculate_crit.return_value = False
+        mock_calculate_multiplier.return_value = 1.0
+        mock_move_precision.return_value = 90
+        battle.turn(["move", "fly"], ["move", "tackle"])
+
+        self.assertEqual(pokemon_1.invulnerability_count, 1)
+        self.assertEqual(pokemon_2.cur_hp, 100)
+
+        battle.turn(["move", "fly"], ["move", "tackle"])
+
+        self.assertEqual(pokemon_1.invulnerability_count, 0)
+
+        expected_battle_text = [
+            'Ash sent out BULBASAUR!',
+            'Misty sent out CHARMANDER!',
+            'Turn 1:',
+            'BULBASAUR flew up high!',
+            'CHARMANDER used Tackle!',
+            'BULBASAUR avoided the attack!',
+            'Turn 2:',
+            'BULBASAUR used Fly!',
+            'CHARMANDER used Tackle!'
+        ]
+
+        self.assertEqual(battle.get_all_text(), expected_battle_text)
+
+        self.assertEqual(pokemon_2.cur_hp, 79)
+
+        self.assertTrue(battle.battle_started)
+        self.assertEqual(battle.t1, trainer_1)
+        self.assertEqual(battle.t2, trainer_2)
+        self.assertEqual(battle.turn_count, 2)
+        self.assertIsNone(battle.winner)
+
+    @patch('poke_battle_sim.util.process_move.get_move_precision')
+    @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
+    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    def test_fly_with_power_herb(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision):
+        pokemon_1 = Pokemon(1, 22, ["fly"], "male", stats_actual=[100, 100, 100, 100, 100, 100], item="power-herb")
+        trainer_1 = Trainer('Ash', [pokemon_1])
+
+        pokemon_2 = Pokemon(4, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
+        trainer_2 = Trainer('Misty', [pokemon_2])
+
+        battle = Battle(trainer_1, trainer_2)
+        battle.start()
+
+        mock_calculate_crit.return_value = False
+        mock_calculate_multiplier.return_value = 1.0
+        mock_move_precision.return_value = 90
+        battle.turn(["move", "fly"], ["move", "tackle"])
+
+        self.assertEqual(pokemon_1.invulnerability_count, 0)
+
+        expected_battle_text = [
+            'Ash sent out BULBASAUR!',
+            'Misty sent out CHARMANDER!',
+            'Turn 1:',
+            'BULBASAUR used Fly!',
+            'BULBASAUR became fully charged due to its Power Herb!',
+            'CHARMANDER used Tackle!'
+        ]
+
+        self.assertEqual(battle.get_all_text(), expected_battle_text)
+
+        self.assertEqual(pokemon_2.cur_hp, 79)
+
+        self.assertTrue(battle.battle_started)
+        self.assertEqual(battle.t1, trainer_1)
+        self.assertEqual(battle.t2, trainer_2)
+        self.assertEqual(battle.turn_count, 1)
+        self.assertIsNone(battle.winner)
+
+    @patch('poke_battle_sim.util.process_move.get_move_precision')
+    @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
+    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    def test_dig(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision):
+        pokemon_1 = Pokemon(1, 22, ["dig"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
+        trainer_1 = Trainer('Ash', [pokemon_1])
+
+        pokemon_2 = Pokemon(4, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
+        trainer_2 = Trainer('Misty', [pokemon_2])
+
+        battle = Battle(trainer_1, trainer_2)
+        battle.start()
+
+        mock_calculate_crit.return_value = False
+        mock_calculate_multiplier.return_value = 1.0
+        mock_move_precision.return_value = 90
+        battle.turn(["move", "dig"], ["move", "tackle"])
+
+        self.assertEqual(pokemon_1.invulnerability_count, 1)
+        self.assertEqual(pokemon_2.cur_hp, 100)
+
+        battle.turn(["move", "dig"], ["move", "tackle"])
+
+        self.assertEqual(pokemon_1.invulnerability_count, 0)
+
+        expected_battle_text = [
+            'Ash sent out BULBASAUR!',
+            'Misty sent out CHARMANDER!',
+            'Turn 1:',
+            'BULBASAUR burrowed its way under the ground!',
+            'CHARMANDER used Tackle!',
+            'BULBASAUR avoided the attack!',
+            'Turn 2:',
+            'BULBASAUR used Dig!',
+            "It's super effective!",
+            'CHARMANDER used Tackle!'
+        ]
+
+        self.assertEqual(battle.get_all_text(), expected_battle_text)
+
+        self.assertEqual(pokemon_2.cur_hp, 62)
+
+        self.assertTrue(battle.battle_started)
+        self.assertEqual(battle.t1, trainer_1)
+        self.assertEqual(battle.t2, trainer_2)
+        self.assertEqual(battle.turn_count, 2)
+        self.assertIsNone(battle.winner)
+
+    @patch('poke_battle_sim.util.process_move.get_move_precision')
+    @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
+    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    def test_dig_with_power_herb(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision):
+        pokemon_1 = Pokemon(1, 22, ["dig"], "male", stats_actual=[100, 100, 100, 100, 100, 100], item="power-herb")
+        trainer_1 = Trainer('Ash', [pokemon_1])
+
+        pokemon_2 = Pokemon(4, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
+        trainer_2 = Trainer('Misty', [pokemon_2])
+
+        battle = Battle(trainer_1, trainer_2)
+        battle.start()
+
+        mock_calculate_crit.return_value = False
+        mock_calculate_multiplier.return_value = 1.0
+        mock_move_precision.return_value = 90
+        battle.turn(["move", "dig"], ["move", "tackle"])
+
+        self.assertEqual(pokemon_1.invulnerability_count, 0)
+
+        expected_battle_text = [
+            'Ash sent out BULBASAUR!',
+            'Misty sent out CHARMANDER!',
+            'Turn 1:',
+            'BULBASAUR used Dig!',
+            'BULBASAUR became fully charged due to its Power Herb!',
+            "It's super effective!",
+            'CHARMANDER used Tackle!'
+        ]
+
+        self.assertEqual(battle.get_all_text(), expected_battle_text)
+
+        self.assertEqual(pokemon_2.cur_hp, 62)
+
+        self.assertTrue(battle.battle_started)
+        self.assertEqual(battle.t1, trainer_1)
+        self.assertEqual(battle.t2, trainer_2)
+        self.assertEqual(battle.turn_count, 1)
+        self.assertIsNone(battle.winner)
+
+    @patch('poke_battle_sim.util.process_move.get_move_precision')
+    @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
+    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    def test_dive(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision):
+        pokemon_1 = Pokemon(1, 22, ["dive"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
+        trainer_1 = Trainer('Ash', [pokemon_1])
+
+        pokemon_2 = Pokemon(4, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
+        trainer_2 = Trainer('Misty', [pokemon_2])
+
+        battle = Battle(trainer_1, trainer_2)
+        battle.start()
+
+        mock_calculate_crit.return_value = False
+        mock_calculate_multiplier.return_value = 1.0
+        mock_move_precision.return_value = 90
+        battle.turn(["move", "dive"], ["move", "tackle"])
+
+        self.assertEqual(pokemon_1.invulnerability_count, 1)
+        self.assertEqual(pokemon_2.cur_hp, 100)
+
+        battle.turn(["move", "dive"], ["move", "tackle"])
+
+        self.assertEqual(pokemon_1.invulnerability_count, 0)
+
+        expected_battle_text = [
+            'Ash sent out BULBASAUR!',
+            'Misty sent out CHARMANDER!',
+            'Turn 1:',
+            'BULBASAUR hid underwater!',
+            'CHARMANDER used Tackle!',
+            'BULBASAUR avoided the attack!',
+            'Turn 2:',
+            'BULBASAUR used Dive!',
+            "It's super effective!",
+            'CHARMANDER used Tackle!'
+        ]
+
+        self.assertEqual(battle.get_all_text(), expected_battle_text)
+
+        self.assertEqual(pokemon_2.cur_hp, 62)
+
+        self.assertTrue(battle.battle_started)
+        self.assertEqual(battle.t1, trainer_1)
+        self.assertEqual(battle.t2, trainer_2)
+        self.assertEqual(battle.turn_count, 2)
+        self.assertIsNone(battle.winner)
+
+    @patch('poke_battle_sim.util.process_move.get_move_precision')
+    @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
+    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    def test_dive_with_power_herb(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision):
+        pokemon_1 = Pokemon(1, 22, ["dive"], "male", stats_actual=[100, 100, 100, 100, 100, 100], item="power-herb")
+        trainer_1 = Trainer('Ash', [pokemon_1])
+
+        pokemon_2 = Pokemon(4, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
+        trainer_2 = Trainer('Misty', [pokemon_2])
+
+        battle = Battle(trainer_1, trainer_2)
+        battle.start()
+
+        mock_calculate_crit.return_value = False
+        mock_calculate_multiplier.return_value = 1.0
+        mock_move_precision.return_value = 90
+        battle.turn(["move", "dive"], ["move", "tackle"])
+
+        self.assertEqual(pokemon_1.invulnerability_count, 0)
+
+        expected_battle_text = [
+            'Ash sent out BULBASAUR!',
+            'Misty sent out CHARMANDER!',
+            'Turn 1:',
+            'BULBASAUR used Dive!',
+            'BULBASAUR became fully charged due to its Power Herb!',
+            "It's super effective!",
+            'CHARMANDER used Tackle!'
+        ]
+
+        self.assertEqual(battle.get_all_text(), expected_battle_text)
+
+        self.assertEqual(pokemon_2.cur_hp, 62)
+
+        self.assertTrue(battle.battle_started)
+        self.assertEqual(battle.t1, trainer_1)
+        self.assertEqual(battle.t2, trainer_2)
+        self.assertEqual(battle.turn_count, 1)
+        self.assertIsNone(battle.winner)
+
+    @patch('poke_battle_sim.util.process_move.paralyze')
+    @patch('poke_battle_sim.util.process_move.get_move_precision')
+    @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
+    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    def test_bounce(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision, mock_paralyze):
+        pokemon_1 = Pokemon(1, 22, ["bounce"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
+        trainer_1 = Trainer('Ash', [pokemon_1])
+
+        pokemon_2 = Pokemon(4, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
+        trainer_2 = Trainer('Misty', [pokemon_2])
+
+        battle = Battle(trainer_1, trainer_2)
+        battle.start()
+
+        mock_calculate_crit.return_value = False
+        mock_calculate_multiplier.return_value = 1.0
+        mock_move_precision.return_value = 80
+        battle.turn(["move", "bounce"], ["move", "tackle"])
+
+        self.assertEqual(pokemon_1.invulnerability_count, 1)
+        self.assertEqual(pokemon_2.cur_hp, 100)
+
+        battle.turn(["move", "bounce"], ["move", "tackle"])
+
+        self.assertEqual(pokemon_1.invulnerability_count, 0)
+
+        expected_battle_text = [
+            'Ash sent out BULBASAUR!',
+            'Misty sent out CHARMANDER!',
+            'Turn 1:',
+            'BULBASAUR sprang up!',
+            'CHARMANDER used Tackle!',
+            'BULBASAUR avoided the attack!',
+            'Turn 2:',
+            'BULBASAUR used Bounce!',
+            'CHARMANDER used Tackle!'
+        ]
+
+        self.assertEqual(battle.get_all_text(), expected_battle_text)
+
+        self.assertEqual(pokemon_2.cur_hp, 80)
+
+        self.assertTrue(battle.battle_started)
+        self.assertEqual(battle.t1, trainer_1)
+        self.assertEqual(battle.t2, trainer_2)
+        self.assertEqual(battle.turn_count, 2)
+        self.assertIsNone(battle.winner)
+
+    @patch('poke_battle_sim.util.process_move.paralyze')
+    @patch('poke_battle_sim.util.process_move.get_move_precision')
+    @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
+    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    def test_bounce_with_power_herb(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision, mock_paralyze):
+        pokemon_1 = Pokemon(1, 22, ["bounce"], "male", stats_actual=[100, 100, 100, 100, 100, 100], item="power-herb")
+        trainer_1 = Trainer('Ash', [pokemon_1])
+
+        pokemon_2 = Pokemon(4, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
+        trainer_2 = Trainer('Misty', [pokemon_2])
+
+        battle = Battle(trainer_1, trainer_2)
+        battle.start()
+
+        mock_calculate_crit.return_value = False
+        mock_calculate_multiplier.return_value = 1.0
+        mock_move_precision.return_value = 80
+        battle.turn(["move", "bounce"], ["move", "tackle"])
+
+        self.assertEqual(pokemon_1.invulnerability_count, 0)
+
+        expected_battle_text = [
+            'Ash sent out BULBASAUR!',
+            'Misty sent out CHARMANDER!',
+            'Turn 1:',
+            'BULBASAUR used Bounce!',
+            'BULBASAUR became fully charged due to its Power Herb!',
+            'CHARMANDER used Tackle!'
+        ]
+
+        self.assertEqual(battle.get_all_text(), expected_battle_text)
+
+        self.assertEqual(pokemon_2.cur_hp, 80)
+
+        self.assertTrue(battle.battle_started)
+        self.assertEqual(battle.t1, trainer_1)
+        self.assertEqual(battle.t2, trainer_2)
+        self.assertEqual(battle.turn_count, 1)
+        self.assertIsNone(battle.winner)
+
+    @patch('poke_battle_sim.util.process_move.get_move_precision')
+    @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
+    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    def test_shadow_force(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision):
+        pokemon_1 = Pokemon(1, 22, ["shadow-force"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
+        trainer_1 = Trainer('Ash', [pokemon_1])
+
+        pokemon_2 = Pokemon(4, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
+        trainer_2 = Trainer('Misty', [pokemon_2])
+
+        battle = Battle(trainer_1, trainer_2)
+        battle.start()
+
+        mock_calculate_crit.return_value = False
+        mock_calculate_multiplier.return_value = 1.0
+        mock_move_precision.return_value = 90
+        battle.turn(["move", "shadow-force"], ["move", "tackle"])
+
+        self.assertEqual(pokemon_1.invulnerability_count, 1)
+        self.assertEqual(pokemon_2.cur_hp, 100)
+
+        battle.turn(["move", "shadow-force"], ["move", "tackle"])
+
+        self.assertEqual(pokemon_1.invulnerability_count, 0)
+
+        expected_battle_text = [
+            'Ash sent out BULBASAUR!',
+            'Misty sent out CHARMANDER!',
+            'Turn 1:',
+            'BULBASAUR used Shadow Force!',
+            'BULBASAUR vanished instantly!',
+            'CHARMANDER used Tackle!',
+            'BULBASAUR avoided the attack!',
+            'Turn 2:',
+            'BULBASAUR used Shadow Force!',
+            'CHARMANDER used Tackle!'
+        ]
+
+        self.assertEqual(battle.get_all_text(), expected_battle_text)
+
+        self.assertEqual(pokemon_2.cur_hp, 73)
+
+        self.assertTrue(battle.battle_started)
+        self.assertEqual(battle.t1, trainer_1)
+        self.assertEqual(battle.t2, trainer_2)
+        self.assertEqual(battle.turn_count, 2)
+        self.assertIsNone(battle.winner)
+
+    @patch('poke_battle_sim.util.process_move.get_move_precision')
+    @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
+    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    def test_shadow_force_with_power_herb(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision):
+        pokemon_1 = Pokemon(1, 22, ["shadow-force"], "male", stats_actual=[100, 100, 100, 100, 100, 100], item="power-herb")
+        trainer_1 = Trainer('Ash', [pokemon_1])
+
+        pokemon_2 = Pokemon(4, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
+        trainer_2 = Trainer('Misty', [pokemon_2])
+
+        battle = Battle(trainer_1, trainer_2)
+        battle.start()
+
+        mock_calculate_crit.return_value = False
+        mock_calculate_multiplier.return_value = 1.0
+        mock_move_precision.return_value = 90
+        battle.turn(["move", "shadow-force"], ["move", "tackle"])
+
+        self.assertEqual(pokemon_1.invulnerability_count, 0)
+
+        expected_battle_text = [
+            'Ash sent out BULBASAUR!',
+            'Misty sent out CHARMANDER!',
+            'Turn 1:',
+            'BULBASAUR used Shadow Force!',
+            'BULBASAUR became fully charged due to its Power Herb!',
+            'CHARMANDER used Tackle!'
+        ]
+
+        self.assertEqual(battle.get_all_text(), expected_battle_text)
+
+        self.assertEqual(pokemon_2.cur_hp, 73)
+
+        self.assertTrue(battle.battle_started)
+        self.assertEqual(battle.t1, trainer_1)
+        self.assertEqual(battle.t2, trainer_2)
+        self.assertEqual(battle.turn_count, 1)
+        self.assertIsNone(battle.winner)
+        
 
 if __name__ == '__main__':
     unittest.main()

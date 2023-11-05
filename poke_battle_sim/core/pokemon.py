@@ -252,7 +252,7 @@ class Pokemon:
         self.stockpile = 0
         self.charged = 0
         self.taunt = 0
-        self.inv_count = 0
+        self.invulnerability_count = 0
         self.ability_count = 0
         self.metronome_count = 0
         self.last_damage_taken = 0
