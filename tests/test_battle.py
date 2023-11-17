@@ -7,7 +7,7 @@ from poke_battle_sim.util import process_move
 
 class TestBattle(unittest.TestCase):
 
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_simple_battle(self, mock_calculate_crit):
         pokemon_1 = Pokemon(1, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -33,15 +33,15 @@ class TestBattle(unittest.TestCase):
             'Ash has defeated Misty!'
         ]
 
+        self.assertEqual(battle.get_all_text(), expected_battle_text)
         self.assertEqual(battle.last_move.name, 'tackle')
         self.assertEqual(battle.t1, trainer_1)
         self.assertEqual(battle.t2, trainer_2)
         self.assertEqual(battle.turn_count, 1)
         self.assertEqual(battle.winner, trainer_1)
-        self.assertEqual(battle.get_all_text(), expected_battle_text)
         self.assertEqual(battle.battlefield.get_terrain(), 'other')
 
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_pokemon_nickname_usage(self, mock_calculate_crit):
         pokemon_1 = Pokemon(1, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 1], nickname="from Ash")
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -118,7 +118,7 @@ class TestBattle(unittest.TestCase):
             Battle(trainer_1, trainer_2, weather="invalid_weather")
         self.assertEqual(str(context.exception), "Attempted to create Battle with invalid weather")
 
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_battle_with_weather_has_infinite_duration(self, mock_calculate_crit):
         pokemon_1 = Pokemon(1, 22, ["tackle"], "male", stats_actual=[100, 1, 100, 100, 100, 100])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -144,7 +144,7 @@ class TestBattle(unittest.TestCase):
         self.assertEqual(battle.turn_count, 11)
         self.assertEqual(battle.get_all_text(), expected_battle_text)
 
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_critical_damage(self, mock_calculate_crit):
         pokemon_1 = Pokemon(1, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -176,7 +176,7 @@ class TestBattle(unittest.TestCase):
         self.assertEqual(battle.winner, trainer_1)
         self.assertEqual(battle.get_all_text(), expected_battle_text)
 
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_no_pp_on_all_moves(self, mock_calculate_crit):
         pokemon_1 = Pokemon(1, 22, ["tackle", "thunder"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
         self.assertEqual(len(pokemon_1.moves), 2)
@@ -226,7 +226,7 @@ class TestBattle(unittest.TestCase):
             battle.turn(["move", "tackle"], ["move", "tackle"])
         self.assertEqual(str(context.exception), "Trainer 1 attempted to use move not in Pokemon's moveset")
 
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_default_trainer_selection(self, mock_calculate_crit):
         pokemon_1 = Pokemon(1, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -259,7 +259,7 @@ class TestBattle(unittest.TestCase):
         self.assertIsNone(battle.winner)
         self.assertEqual(battle.get_all_text(), expected_battle_text)
 
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_trainer_selection_initialization(self, mock_calculate_crit):
         pokemon_1 = Pokemon(1, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -294,7 +294,7 @@ class TestBattle(unittest.TestCase):
         self.assertIsNone(battle.winner)
         self.assertEqual(battle.get_all_text(), expected_battle_text)
 
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_invalid_pokemon_selection_trainer(self, mock_calculate_crit):
         pokemon_1 = Pokemon(1, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -361,7 +361,7 @@ class TestBattle(unittest.TestCase):
 
         self.assertEqual(str(context.exception), "Attempted to create Battle with Trainer already in battle")
 
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_use_heal_item(self, mock_calculate_crit):
         pokemon_1 = Pokemon(1, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 100], cur_hp=50)
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -393,7 +393,7 @@ class TestBattle(unittest.TestCase):
         self.assertIsNone(battle.winner)
         self.assertEqual(battle.get_all_text(), expected_battle_text)
 
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_use_pp_restore_item(self, mock_calculate_crit):
         pokemon_1 = Pokemon(1, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
         pokemon_1.moves[0].cur_pp = 15
@@ -426,7 +426,7 @@ class TestBattle(unittest.TestCase):
         self.assertEqual(battle.t1.current_poke.moves[0].cur_pp, 25)
 
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_automatic_use_of_item(self, mock_calculate_crit, mock_calculate_multiplier):
         pokemon_1 = Pokemon(1, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 1], cur_hp=60, item="oran-berry")
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -468,7 +468,7 @@ class TestBattle(unittest.TestCase):
         self.assertEqual(battle.get_all_text(), expected_battle_text)
 
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_automatic_use_of_item_not_working_on_potion(self, mock_calculate_crit, mock_calculate_multiplier):
         pokemon_1 = Pokemon(1, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 1], cur_hp=60, item="potion")
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -507,7 +507,7 @@ class TestBattle(unittest.TestCase):
         self.assertIsNone(battle.winner)
         self.assertEqual(battle.get_all_text(), expected_battle_text)
 
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_switch_out(self, mock_calculate_crit):
         pokemon_1 = Pokemon(1, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
         pokemon_2 = Pokemon(2, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
@@ -538,7 +538,7 @@ class TestBattle(unittest.TestCase):
         self.assertEqual(battle.get_all_text(), expected_battle_text)
         self.assertEqual(battle.t1.current_poke, pokemon_2)
 
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_wrong_action_type(self, mock_calculate_crit):
         with self.assertRaises(Exception) as context:
             pokemon_1 = Pokemon(1, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
@@ -586,7 +586,7 @@ class TestBattle(unittest.TestCase):
             battle.turn(["other", "switch"], ["move", "tackle"])
         self.assertEqual(str(context.exception), "Trainer attempted to switch out Pokemon that's trapped")
 
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_natural_cure_healing_on_switch_out(self, mock_calculate_crit):
         pokemon_1 = Pokemon(1, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 100], ability="natural-cure")
         pokemon_2 = Pokemon(2, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
@@ -624,7 +624,7 @@ class TestBattle(unittest.TestCase):
         self.assertEqual(battle.get_all_text(), expected_battle_text)
         self.assertEqual(battle.t1.current_poke, pokemon_2)
 
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_weather_ball_water_type(self, mock_calculate_crit):
         pokemon_1 = Pokemon(1, 22, ["weather-ball"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -656,7 +656,7 @@ class TestBattle(unittest.TestCase):
         self.assertIsNone(battle.winner)
         self.assertEqual(battle.get_all_text(), expected_battle_text)
 
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_weather_ball_rock_type(self, mock_calculate_crit):
         pokemon_1 = Pokemon(1, 22, ["weather-ball"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -690,7 +690,7 @@ class TestBattle(unittest.TestCase):
         self.assertIsNone(battle.winner)
         self.assertEqual(battle.get_all_text(), expected_battle_text)
 
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_weather_ball_clear_weather(self, mock_calculate_crit):
         pokemon_1 = Pokemon(1, 22, ["weather-ball"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -723,7 +723,7 @@ class TestBattle(unittest.TestCase):
     @patch('poke_battle_sim.util.process_move.give_nv_status')
     @patch('poke_battle_sim.util.process_move._calculate_hit_or_miss')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_fire_blast(self, mock_calculate_crit, mock_calculate_multiplier, mock_calculate_hit_or_miss, mock_status):
         pokemon_1 = Pokemon(1, 22, ["fire-blast"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -759,7 +759,7 @@ class TestBattle(unittest.TestCase):
 
     @patch('poke_battle_sim.util.process_move.give_nv_status')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_default_natural_power(
             self, mock_calculate_crit, mock_calculate_multiplier, mock_status
     ):
@@ -796,7 +796,7 @@ class TestBattle(unittest.TestCase):
 
     @patch('poke_battle_sim.util.process_move.give_nv_status')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_natural_power_in_building(
             self, mock_calculate_crit, mock_calculate_multiplier, mock_status
     ):
@@ -832,7 +832,7 @@ class TestBattle(unittest.TestCase):
         self.assertEqual(battle.get_all_text(), expected_battle_text)
 
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_natural_power_in_sand(
             self, mock_calculate_crit, mock_calculate_multiplier
     ):
@@ -871,7 +871,7 @@ class TestBattle(unittest.TestCase):
     @patch('poke_battle_sim.util.process_move._flinch')
     @patch('poke_battle_sim.util.process_move._calculate_hit_or_miss')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_natural_power_in_cave(
             self, mock_calculate_crit, mock_calculate_multiplier, mock_calculate_hit_or_miss, mock_flinch
     ):
@@ -909,7 +909,7 @@ class TestBattle(unittest.TestCase):
         self.assertEqual(battle.get_all_text(), expected_battle_text)
 
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_natural_power_in_tall_grass(
             self, mock_calculate_crit, mock_calculate_multiplier
     ):
@@ -947,7 +947,7 @@ class TestBattle(unittest.TestCase):
 
     @patch('poke_battle_sim.util.process_move._calculate_hit_or_miss')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_natural_power_in_water(
             self, mock_calculate_crit, mock_calculate_multiplier, mock_calculate_hit_or_miss
     ):
@@ -987,7 +987,7 @@ class TestBattle(unittest.TestCase):
     @patch('poke_battle_sim.util.process_move.give_nv_status')
     @patch('poke_battle_sim.util.process_move._calculate_hit_or_miss')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_natural_power_in_snow(
             self, mock_calculate_crit, mock_calculate_multiplier, mock_calculate_hit_or_miss, mock_status
     ):
@@ -1026,7 +1026,7 @@ class TestBattle(unittest.TestCase):
 
     @patch('poke_battle_sim.util.process_move.give_nv_status')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_natural_power_in_ice(
             self, mock_calculate_crit, mock_calculate_multiplier, mock_status
     ):
@@ -1063,7 +1063,7 @@ class TestBattle(unittest.TestCase):
         self.assertEqual(battle.get_all_text(), expected_battle_text)
 
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_earthquake(
             self, mock_calculate_crit, mock_calculate_multiplier
     ):
@@ -1099,7 +1099,7 @@ class TestBattle(unittest.TestCase):
         self.assertEqual(battle.get_all_text(), expected_battle_text)
 
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_earthquake_in_digging_opponent(
             self, mock_calculate_crit, mock_calculate_multiplier
     ):
@@ -1135,7 +1135,7 @@ class TestBattle(unittest.TestCase):
         self.assertIsNone(battle.winner)
         self.assertEqual(battle.get_all_text(), expected_battle_text)
 
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_stealth_roc(self, mock_calculate_crit):
         pokemon_1 = Pokemon(1, 22, ["stealth-rock"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -1237,7 +1237,7 @@ class TestBattle(unittest.TestCase):
         self.assertEqual(battle.get_all_text(), expected_battle_text)
 
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_rapid_spin_stealth_roc(self, mock_calculate_crit, mock_calculate_multiplier):
         pokemon_1 = Pokemon(1, 22, ["rapid-spin"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -1273,7 +1273,7 @@ class TestBattle(unittest.TestCase):
         self.assertEqual(battle.get_all_text(), expected_battle_text)
 
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_surf(
             self, mock_calculate_crit, mock_calculate_multiplier
     ):
@@ -1309,7 +1309,7 @@ class TestBattle(unittest.TestCase):
         self.assertEqual(battle.get_all_text(), expected_battle_text)
 
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_surf_in_diving_opponent(
             self, mock_calculate_crit, mock_calculate_multiplier
     ):
@@ -1348,7 +1348,7 @@ class TestBattle(unittest.TestCase):
     @patch('poke_battle_sim.util.process_move._generate_2_to_5')
     @patch('poke_battle_sim.util.process_move._calculate_hit_or_miss')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_whirlpool(
             self, mock_calculate_crit, mock_calculate_multiplier, mock_calculate_hit_or_miss, mock_turns
     ):
@@ -1416,7 +1416,7 @@ class TestBattle(unittest.TestCase):
 
     @patch('poke_battle_sim.util.process_move._calculate_hit_or_miss')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_whirlpool_in_diving_opponent(
             self, mock_calculate_crit, mock_calculate_multiplier, mock_calculate_hit_or_miss
     ):
@@ -1457,7 +1457,7 @@ class TestBattle(unittest.TestCase):
         self.assertIsNone(battle.winner)
 
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_low_kick_in_diving_opponent(
             self, mock_calculate_crit, mock_calculate_multiplier
     ):
@@ -1492,7 +1492,7 @@ class TestBattle(unittest.TestCase):
         self.assertEqual(battle.get_all_text(), expected_battle_text)
 
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_gust(
             self, mock_calculate_crit, mock_calculate_multiplier
     ):
@@ -1528,7 +1528,7 @@ class TestBattle(unittest.TestCase):
 
     @patch('poke_battle_sim.util.process_move._calculate_hit_or_miss')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_gust_in_air_opponent(
             self, mock_calculate_crit, mock_calculate_multiplier, mock_calculate_hit_or_miss
     ):
@@ -1566,7 +1566,7 @@ class TestBattle(unittest.TestCase):
         self.assertIsNone(battle.winner)
 
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_struggle(self, mock_calculate_crit, mock_calculate_multiplier):
         pokemon_1 = Pokemon(1, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
         pokemon_1.moves[0].cur_pp = 0
@@ -1605,7 +1605,7 @@ class TestBattle(unittest.TestCase):
 
     @patch('poke_battle_sim.util.process_move._flinch')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_stomp(
             self, mock_calculate_crit, mock_calculate_multiplier, _
     ):
@@ -1642,7 +1642,7 @@ class TestBattle(unittest.TestCase):
 
     @patch('poke_battle_sim.util.process_move.get_move_precision')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_stomp_in_minimized_opponent(
             self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision
     ):
@@ -1682,7 +1682,7 @@ class TestBattle(unittest.TestCase):
 
     @patch('poke_battle_sim.util.process_move.get_move_precision')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_stomp_in_other_evasion_move_opponent(
             self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision
     ):
@@ -1721,7 +1721,7 @@ class TestBattle(unittest.TestCase):
         self.assertEqual(battle.get_all_text(), expected_battle_text)
 
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_absorb(
             self, mock_calculate_crit, mock_calculate_multiplier
     ):
@@ -1760,7 +1760,7 @@ class TestBattle(unittest.TestCase):
         self.assertEqual(battle.get_all_text(), expected_battle_text)
 
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_absorb_on_heal_block(
             self, mock_calculate_crit, mock_calculate_multiplier
     ):
@@ -1940,7 +1940,7 @@ class TestBattle(unittest.TestCase):
     @patch('poke_battle_sim.util.process_move.paralyze')
     @patch('poke_battle_sim.util.process_move.get_move_precision')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_thunder(
             self, mock_calculate_crit, mock_calculate_multiplier, mock_precision, mock_paralize
     ):
@@ -1979,7 +1979,7 @@ class TestBattle(unittest.TestCase):
     @patch('poke_battle_sim.util.process_move.paralyze')
     @patch('poke_battle_sim.util.process_move.get_move_precision')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_thunder_in_sun_is_less_precise(
             self, mock_calculate_crit, mock_calculate_multiplier, mock_precision, mock_paralize
     ):
@@ -2019,7 +2019,7 @@ class TestBattle(unittest.TestCase):
 
     @patch('poke_battle_sim.util.process_move.paralyze')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_thunder_in_rain_never_miss(
             self, mock_calculate_crit, mock_calculate_multiplier, mock_paralize
     ):
@@ -2057,7 +2057,7 @@ class TestBattle(unittest.TestCase):
 
     @patch('poke_battle_sim.util.process_move.paralyze')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_electric_move_on_volt_absorb(
             self, mock_calculate_crit, mock_calculate_multiplier, mock_paralize
     ):
@@ -2099,7 +2099,7 @@ class TestBattle(unittest.TestCase):
 
     @patch('poke_battle_sim.util.process_move.paralyze')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_electric_move_on_volt_absorb_on_heal_block(
             self, mock_calculate_crit, mock_calculate_multiplier, mock_paralize
     ):
@@ -2147,7 +2147,7 @@ class TestBattle(unittest.TestCase):
         self.assertIsNone(battle.winner)
 
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_smelling_salts(
             self, mock_calculate_crit, mock_calculate_multiplier
     ):
@@ -2182,7 +2182,7 @@ class TestBattle(unittest.TestCase):
         self.assertEqual(battle.get_all_text(), expected_battle_text)
 
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_smelling_salts_on_paralyzed_opponent(
             self, mock_calculate_crit, mock_calculate_multiplier
     ):
@@ -2222,7 +2222,7 @@ class TestBattle(unittest.TestCase):
 
     @patch('poke_battle_sim.util.process_move.give_nv_status')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_flamethrower(self, mock_calculate_crit, mock_calculate_multiplier, mock_status):
         pokemon_1 = Pokemon(1, 22, ["flamethrower"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -2258,7 +2258,7 @@ class TestBattle(unittest.TestCase):
     @patch('poke_battle_sim.util.process_move.give_nv_status')
     @patch('poke_battle_sim.util.process_move.get_move_precision')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_flamethrower(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision, mock_status):
         pokemon_1 = Pokemon(1, 22, ["flamethrower"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -2295,7 +2295,7 @@ class TestBattle(unittest.TestCase):
     @patch('poke_battle_sim.util.process_move.give_nv_status')
     @patch('poke_battle_sim.util.process_move.get_move_precision')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_flamethrower_on_thick_fat(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision, mock_status):
         pokemon_1 = Pokemon(1, 22, ["flamethrower"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -2332,7 +2332,7 @@ class TestBattle(unittest.TestCase):
 
     @patch('poke_battle_sim.util.process_move.get_move_precision')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_hyper_beam(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision):
         pokemon_1 = Pokemon(1, 22, ["splash", "hyper-beam"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -2377,7 +2377,7 @@ class TestBattle(unittest.TestCase):
 
     @patch('poke_battle_sim.util.process_move.get_move_precision')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_hyper_beam_miss(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision):
         pokemon_1 = Pokemon(1, 22, ["splash", "hyper-beam"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -2424,7 +2424,7 @@ class TestBattle(unittest.TestCase):
 
     @patch('poke_battle_sim.util.process_move.get_move_precision')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_seismic_toss(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision):
         pokemon_1 = Pokemon(1, 22, ["seismic-toss"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -2457,7 +2457,7 @@ class TestBattle(unittest.TestCase):
         self.assertIsNone(battle.winner)
         self.assertEqual(battle.get_all_text(), expected_battle_text)
 
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_seismic_toss_on_ghost_pokemon(self, mock_calculate_crit):
         pokemon_1 = Pokemon(1, 22, ["seismic-toss"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -2491,7 +2491,7 @@ class TestBattle(unittest.TestCase):
 
     @patch('poke_battle_sim.util.process_move.get_move_precision')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_night_shade(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision):
         pokemon_1 = Pokemon(1, 22, ["night-shade"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -2524,7 +2524,7 @@ class TestBattle(unittest.TestCase):
         self.assertIsNone(battle.winner)
         self.assertEqual(battle.get_all_text(), expected_battle_text)
 
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_night_shade_on_normal_pokemon(self, mock_calculate_crit):
         pokemon_1 = Pokemon(1, 22, ["night-shade"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -2619,7 +2619,7 @@ class TestBattle(unittest.TestCase):
         self.assertIsNone(battle.winner)
 
     @patch('poke_battle_sim.util.process_move.get_move_precision')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_miss_night_shade(self, mock_calculate_crit, mock_move_precision):
         pokemon_1 = Pokemon(1, 22, ["night-shade"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -2654,7 +2654,7 @@ class TestBattle(unittest.TestCase):
         self.assertEqual(battle.get_all_text(), expected_battle_text)
 
     @patch('poke_battle_sim.util.process_move.get_move_precision')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_avoid_night_shade(self, mock_calculate_crit, mock_move_precision):
         pokemon_1 = Pokemon(1, 22, ["night-shade"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -2795,7 +2795,7 @@ class TestBattle(unittest.TestCase):
 
     @patch('poke_battle_sim.util.process_move.get_move_precision')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_fly(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision):
         pokemon_1 = Pokemon(1, 22, ["fly"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -2842,7 +2842,7 @@ class TestBattle(unittest.TestCase):
 
     @patch('poke_battle_sim.util.process_move.get_move_precision')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_fly_with_power_herb(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision):
         pokemon_1 = Pokemon(1, 22, ["fly"], "male", stats_actual=[100, 100, 100, 100, 100, 100], item="power-herb")
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -2881,7 +2881,7 @@ class TestBattle(unittest.TestCase):
 
     @patch('poke_battle_sim.util.process_move.get_move_precision')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_dig(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision):
         pokemon_1 = Pokemon(1, 22, ["dig"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -2929,7 +2929,7 @@ class TestBattle(unittest.TestCase):
 
     @patch('poke_battle_sim.util.process_move.get_move_precision')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_dig_with_power_herb(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision):
         pokemon_1 = Pokemon(1, 22, ["dig"], "male", stats_actual=[100, 100, 100, 100, 100, 100], item="power-herb")
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -2969,7 +2969,7 @@ class TestBattle(unittest.TestCase):
 
     @patch('poke_battle_sim.util.process_move.get_move_precision')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_dive(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision):
         pokemon_1 = Pokemon(1, 22, ["dive"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -3017,7 +3017,7 @@ class TestBattle(unittest.TestCase):
 
     @patch('poke_battle_sim.util.process_move.get_move_precision')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_dive_with_power_herb(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision):
         pokemon_1 = Pokemon(1, 22, ["dive"], "male", stats_actual=[100, 100, 100, 100, 100, 100], item="power-herb")
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -3058,7 +3058,7 @@ class TestBattle(unittest.TestCase):
     @patch('poke_battle_sim.util.process_move.paralyze')
     @patch('poke_battle_sim.util.process_move.get_move_precision')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_bounce(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision, mock_paralyze):
         pokemon_1 = Pokemon(1, 22, ["bounce"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -3106,7 +3106,7 @@ class TestBattle(unittest.TestCase):
     @patch('poke_battle_sim.util.process_move.paralyze')
     @patch('poke_battle_sim.util.process_move.get_move_precision')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_bounce_with_power_herb(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision, mock_paralyze):
         pokemon_1 = Pokemon(1, 22, ["bounce"], "male", stats_actual=[100, 100, 100, 100, 100, 100], item="power-herb")
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -3145,7 +3145,7 @@ class TestBattle(unittest.TestCase):
 
     @patch('poke_battle_sim.util.process_move.get_move_precision')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_shadow_force(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision):
         pokemon_1 = Pokemon(1, 22, ["shadow-force"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -3193,7 +3193,7 @@ class TestBattle(unittest.TestCase):
 
     @patch('poke_battle_sim.util.process_move.get_move_precision')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
-    @patch('poke_battle_sim.util.process_move._calculate_crit')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_shadow_force_with_power_herb(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision):
         pokemon_1 = Pokemon(1, 22, ["shadow-force"], "male", stats_actual=[100, 100, 100, 100, 100, 100], item="power-herb")
         trainer_1 = Trainer('Ash', [pokemon_1])
@@ -3229,7 +3229,49 @@ class TestBattle(unittest.TestCase):
         self.assertEqual(battle.t2, trainer_2)
         self.assertEqual(battle.turn_count, 1)
         self.assertIsNone(battle.winner)
-        
+
+    @patch('poke_battle_sim.util.process_move.get_move_precision')
+    @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
+    def test_shadow_force_on_protect(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision):
+        pokemon_1 = Pokemon(1, 22, ["shadow-force"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
+        trainer_1 = Trainer('Ash', [pokemon_1])
+
+        pokemon_2 = Pokemon(4, 22, ["splash", "protect"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
+        trainer_2 = Trainer('Misty', [pokemon_2])
+
+        battle = Battle(trainer_1, trainer_2)
+        battle.start()
+
+        mock_calculate_crit.return_value = False
+        mock_calculate_multiplier.return_value = 1.0
+        mock_move_precision.return_value = 90
+        battle.turn(["move", "shadow-force"], ["move", "splash"])
+        battle.turn(["move", "shadow-force"], ["move", "protect"])
+
+        expected_battle_text = [
+            'Ash sent out BULBASAUR!',
+            'Misty sent out CHARMANDER!',
+            'Turn 1:',
+            'BULBASAUR used Shadow Force!',
+            'BULBASAUR vanished instantly!',
+            'CHARMANDER used Splash!',
+            'But nothing happened!',
+            'Turn 2:',
+            'CHARMANDER used Protect!',
+            'BULBASAUR used Shadow Force!'
+        ]
+
+        self.assertEqual(battle.get_all_text(), expected_battle_text)
+
+        self.assertEqual(pokemon_2.cur_hp, 73)
+
+        self.assertTrue(battle.battle_started)
+        self.assertEqual(battle.t1, trainer_1)
+        self.assertEqual(battle.t2, trainer_2)
+        self.assertEqual(battle.turn_count, 2)
+        self.assertIsNone(battle.winner)
+
 
 if __name__ == '__main__':
     unittest.main()

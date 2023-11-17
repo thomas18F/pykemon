@@ -392,7 +392,7 @@ def on_damage_items(poke: pk.Pokemon, battle: bt.Battle, move_data: Move):
     elif item == "custap-berry":
         poke.prio_boost = True
     elif item == "enigma-berry":
-        t_mult = pm.calculate_type_ef(poke, move_data)
+        t_mult = pm.calculate_type_efficiency(poke, move_data)
         if t_mult and t_mult > 1:
             _eat_item(poke, battle)
             poke.heal(max(1, poke.max_hp // 4))

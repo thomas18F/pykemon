@@ -86,7 +86,7 @@ def selection_abilities(
     elif poke.has_ability("anticipation") and poke.enemy.current_poke.is_alive:
         if any(
             [
-                pm.calculate_type_ef(poke, move) > 1 or move.id in [20, 55, 62]
+                pm.calculate_type_efficiency(poke, move) > 1 or move.id in [20, 55, 62]
                 for move in poke.enemy.current_poke.moves
             ]
         ):
@@ -142,7 +142,7 @@ def enemy_selection_abilities(
     elif poke.has_ability("anticipation") and poke.enemy.current_poke.is_alive:
         if any(
             [
-                pm.calculate_type_ef(poke, move) > 1 or move.id in [20, 55, 62]
+                pm.calculate_type_efficiency(poke, move) > 1 or move.id in [20, 55, 62]
                 for move in poke.enemy.current_poke.moves
             ]
         ):
@@ -228,7 +228,7 @@ def on_hit_abilities(
         )
     elif (
             defender.has_ability("wonder-guard")
-            and pm.calculate_type_ef(defender, move_data) < 2
+            and pm.calculate_type_efficiency(defender, move_data) < 2
     ):
         battle.add_text("It doesn't affect " + defender.nickname)
         return True

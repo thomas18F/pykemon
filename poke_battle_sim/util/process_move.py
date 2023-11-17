@@ -39,7 +39,7 @@ def process_move(
     battle._faint_check()
 
 
-def calculate_type_ef(defender: pk.Pokemon, move_data: Move) -> float:
+def calculate_type_efficiency(defender: pk.Pokemon, move_data: Move) -> float:
     if move_data.type == "typeless":
         return 1
     if (
@@ -65,13 +65,13 @@ def calculate_type_ef(defender: pk.Pokemon, move_data: Move) -> float:
         vulnerable_types.append("dark")
 
     if defender.types[0] in vulnerable_types:
-        t_mult = 1
+        type_multiplier = 1
     else:
-        t_mult = PokeSim.get_type_ef(move_data.type, defender.types[0])
+        type_multiplier = PokeSim.get_type_ef(move_data.type, defender.types[0])
     if defender.types[1]:
         if defender.types[1] not in vulnerable_types:
-            t_mult *= PokeSim.get_type_ef(move_data.type, defender.types[1])
-    return t_mult
+            type_multiplier *= PokeSim.get_type_ef(move_data.type, defender.types[1])
+    return type_multiplier
 
 
 def _calculate_random_multiplier_damage() -> float:
@@ -88,119 +88,114 @@ def _calculate_damage(
     inv_bypass: bool = False,
     skip_fc: bool = False,
     skip_dmg: bool = False,
-    skip_txt: bool = False
+    skip_txt: bool = False,
+    fix_damage: int | None = None
 ) -> int:
     if battle.winner or move_data.category == gs.STATUS:
         return
     if not defender.is_alive:
         _missed(attacker, battle)
         return
+    if _protect_check(defender, battle, move_data):
+        return
+
+    if fix_damage is None and not move_data.power:
+        return
+
     if not inv_bypass and _invulnerability_check(
         attacker, defender, battlefield, battle, move_data
     ):
         return
-    if not move_data.power:
-        return
-    t_mult = calculate_type_ef(defender, move_data)
-    if not skip_txt and not t_mult or (t_mult < 2 and defender.has_ability("wonder-guard")):
+
+    type_multiplier = calculate_type_efficiency(defender, move_data)
+    if not skip_txt and not type_multiplier or (type_multiplier < 2 and defender.has_ability("wonder-guard")):
         _not_affected(battle, defender)
         return
-    if pa.type_protection_abilities(defender, move_data, battle):
-        return
 
-    cc = crit_chance + attacker.crit_stage if crit_chance else attacker.crit_stage
-    if attacker.has_ability("super-luck"):
-        cc += 1
-    if attacker.item == "scope-lens" or attacker.item == "razor-claw":
-        cc += 1
-    elif attacker.item == "lucky-punch" and attacker.name == "chansey":
-        cc += 2
-    if (
-        not defender.trainer.lucky_chant
-        and not defender.has_ability("battle-armor")
-        and not defender.has_ability("shell-armor")
-        and _calculate_crit(cc)
-    ):
-        crit_mult = 2 if not attacker.has_ability("sniper") else 3
-        battle.add_text("A critical hit!")
+    if fix_damage is None:
+        if pa.type_protection_abilities(defender, move_data, battle):
+            return
+
+        critical_multiplier = _calculate_critical_multiplier(attacker, defender, battle, crit_chance)
+
+        if not skip_txt and type_multiplier < 1:
+            battle.add_text("It's not very effective...")
+        elif not skip_txt and type_multiplier > 1:
+            battle.add_text("It's super effective!")
+
+        attacker.calculate_stats_effective(ignore_stats=defender.has_ability("unaware"))
+        defender.calculate_stats_effective(ignore_stats=attacker.has_ability("unaware"))
+
+        a_stat = gs.ATK if move_data.category == gs.PHYSICAL else gs.SP_ATK
+        d_stat = gs.DEF if move_data.category == gs.PHYSICAL else gs.SP_DEF
+
+        if critical_multiplier == 1:
+            atk_ig = attacker.stats_effective[a_stat]
+            def_ig = defender.stats_effective[d_stat]
+        else:
+            def_ig = min(defender.stats_actual[d_stat], defender.stats_effective[d_stat])
+            atk_ig = max(attacker.stats_actual[a_stat], attacker.stats_effective[a_stat])
+        ad_ratio = atk_ig / def_ig
+
+        if attacker.nv_status == gs.BURNED and not attacker.has_ability("guts"):
+            burn_multiplier = 0.5
+        else:
+            burn_multiplier = 1
+        if attacker.charged and move_data.type == "electric":
+            move_data.power *= 2
+        if move_data.type == "electric" and (attacker.mud_sport or defender.mud_sport):
+            move_data.power //= 2
+        if move_data.type == "fire" and (attacker.water_sport or defender.water_sport):
+            move_data.power //= 2
+        if defender.has_ability("thick-fat") and (move_data.type == "fire" or move_data.type == "ice"):
+            move_data.power //= 2
+        pa.damage_calc_abilities(attacker, defender, battle, move_data, type_multiplier)
+        pi.damage_calc_items(attacker, defender, battle, move_data)
+
+        if (
+            type_multiplier <= 1
+            and (move_data.category == gs.PHYSICAL and defender.trainer.reflect)
+            or (move_data.category == gs.SPECIAL and defender.trainer.light_screen)
+        ):
+            screen = 0.5
+        else:
+            screen = 1
+        weather_multiplier = 1
+        if battlefield.weather == gs.HARSH_SUNLIGHT:
+            if move_data.type == "fire":
+                weather_multiplier = 1.5
+            elif move_data.type == "water":
+                weather_multiplier = 0.5
+        elif battlefield.weather == gs.RAIN:
+            if move_data.type == "fire":
+                weather_multiplier = 0.5
+            elif move_data.type == "water":
+                weather_multiplier = 1.5
+
+        if move_data.type == attacker.types[0] or move_data.type == attacker.types[1]:
+            stab = 1.5 if not attacker.has_ability("adaptability") else 2
+        else:
+            stab = 1
+        random_multiplier = _calculate_random_multiplier_damage()
+
+        berry_multiplier = pi.pre_hit_berries(attacker, defender, battle, move_data, type_multiplier)
+        item_multiplier = pi.damage_mult_items(attacker, defender, battle, move_data, type_multiplier)
+
+        damage = (
+            (2 * attacker.level / 5 + 2) * move_data.power * ad_ratio
+        ) / 50 * burn_multiplier * screen * weather_multiplier + 2
+        damage *= critical_multiplier * item_multiplier * random_multiplier * stab * type_multiplier * berry_multiplier
+        damage = int(damage)
     else:
-        crit_mult = 1
-
-    if not skip_txt and t_mult < 1:
-        battle.add_text("It's not very effective...")
-    elif not skip_txt and t_mult > 1:
-        battle.add_text("It's super effective!")
-
-    attacker.calculate_stats_effective(ignore_stats=defender.has_ability("unaware"))
-    defender.calculate_stats_effective(ignore_stats=attacker.has_ability("unaware"))
-
-    a_stat = gs.ATK if move_data.category == gs.PHYSICAL else gs.SP_ATK
-    d_stat = gs.DEF if move_data.category == gs.PHYSICAL else gs.SP_DEF
-
-    if crit_mult == 1:
-        atk_ig = attacker.stats_effective[a_stat]
-        def_ig = defender.stats_effective[d_stat]
-    else:
-        def_ig = min(defender.stats_actual[d_stat], defender.stats_effective[d_stat])
-        atk_ig = max(attacker.stats_actual[a_stat], attacker.stats_effective[a_stat])
-    ad_ratio = atk_ig / def_ig
-
-    if attacker.nv_status == gs.BURNED and not attacker.has_ability("guts"):
-        burn_multiplier = 0.5
-    else:
-        burn_multiplier = 1
-    if attacker.charged and move_data.type == "electric":
-        move_data.power *= 2
-    if move_data.type == "electric" and (attacker.mud_sport or defender.mud_sport):
-        move_data.power //= 2
-    if move_data.type == "fire" and (attacker.water_sport or defender.water_sport):
-        move_data.power //= 2
-    if defender.has_ability("thick-fat") and (move_data.type == "fire" or move_data.type == "ice"):
-        move_data.power //= 2
-    pa.damage_calc_abilities(attacker, defender, battle, move_data, t_mult)
-    pi.damage_calc_items(attacker, defender, battle, move_data)
-
-    if (
-        t_mult <= 1
-        and (move_data.category == gs.PHYSICAL and defender.trainer.reflect)
-        or (move_data.category == gs.SPECIAL and defender.trainer.light_screen)
-    ):
-        screen = 0.5
-    else:
-        screen = 1
-    weather_mult = 1
-    if battlefield.weather == gs.HARSH_SUNLIGHT:
-        if move_data.type == "fire":
-            weather_mult = 1.5
-        elif move_data.type == "water":
-            weather_mult = 0.5
-    elif battlefield.weather == gs.RAIN:
-        if move_data.type == "fire":
-            weather_mult = 0.5
-        elif move_data.type == "water":
-            weather_mult = 1.5
-
-    if move_data.type == attacker.types[0] or move_data.type == attacker.types[1]:
-        stab = 1.5 if not attacker.has_ability("adaptability") else 2
-    else:
-        stab = 1
-    random_mult = _calculate_random_multiplier_damage()
-
-    berry_mult = pi.pre_hit_berries(attacker, defender, battle, move_data, t_mult)
-    item_mult = pi.damage_mult_items(attacker, defender, battle, move_data, t_mult)
-
-    damage = (
-        (2 * attacker.level / 5 + 2) * move_data.power * ad_ratio
-    ) / 50 * burn_multiplier * screen * weather_mult + 2
-    damage *= crit_mult * item_mult * random_mult * stab * t_mult * berry_mult
-    damage = int(damage)
+        critical_multiplier = _calculate_critical_multiplier(attacker, defender, battle, crit_chance)
+        damage = fix_damage
     if skip_dmg:
         return damage
     damage_done = defender.take_damage(damage, move_data)
     if not skip_fc:
         battle._faint_check()
     if (
-        crit_mult > 1
+        critical_multiplier > 1
         and defender.is_alive
         and defender.has_ability("anger-point")
         and defender.stat_stages[gs.ATK] < 6
@@ -279,8 +274,8 @@ def _meta_effect_check(
         return True
     if _snatch_check(attacker, defender, battlefield, battle, move_data, is_first):
         return True
-    if _protect_check(defender, battle, move_data):
-        return True
+    #if _protect_check(defender, battle, move_data):
+    #    return True
     if _soundproof_check(defender, battle, move_data):
         return True
     if _grounded_check(attacker, battle, move_data):
@@ -311,7 +306,33 @@ def _process_effect(
     )
 
 
-def _calculate_crit(crit_chance: int = None) -> bool:
+def _calculate_critical_multiplier(
+        attacker: pk.Pokemon,
+        defender: pk.Pokemon,
+        battle: bt.Battle,
+        crit_chance: int | None
+) -> int:
+    cc = crit_chance + attacker.crit_stage if crit_chance else attacker.crit_stage
+    if attacker.has_ability("super-luck"):
+        cc += 1
+    if attacker.item == "scope-lens" or attacker.item == "razor-claw":
+        cc += 1
+    elif attacker.item == "lucky-punch" and attacker.name == "chansey":
+        cc += 2
+    if (
+            not defender.trainer.lucky_chant
+            and not defender.has_ability("battle-armor")
+            and not defender.has_ability("shell-armor")
+            and _calculate_is_critical(cc)
+    ):
+        critical_multiplier = 2 if not attacker.has_ability("sniper") else 3
+        battle.add_text("A critical hit!")
+    else:
+        critical_multiplier = 1
+    return critical_multiplier
+
+
+def _calculate_is_critical(crit_chance: int = None) -> bool:
     if not crit_chance:
         return randrange(16) < 1
     elif crit_chance == 1:
@@ -1312,7 +1333,7 @@ def _ef_020(
     if defender.has_ability("sturdy"):
         battle.add_text(defender.nickname + " endured the hit!")
         return True
-    if calculate_type_ef(defender, move_data) != 0:
+    if calculate_type_efficiency(defender, move_data) != 0:
         defender.take_damage(65535, move_data)
         if not defender.is_alive:
             battle.add_text("It's a one-hit KO!")
@@ -1436,7 +1457,7 @@ def _ef_025(
     dmg = _calculate_damage(attacker, defender, battlefield, battle, move_data)
     if dmg:
         dmg //= 2
-    elif dmg == 0 and attacker.enemy and calculate_type_ef(defender, move_data) == 0:
+    elif dmg == 0 and attacker.enemy and calculate_type_efficiency(defender, move_data) == 0:
         dmg = defender.max_hp // 2
     if not dmg:
         return True
@@ -1541,7 +1562,7 @@ def _ef_031(
     is_first: bool,
     cc_ib: list,
 ) -> bool:
-    if defender.is_alive and calculate_type_ef(defender, move_data) != 0:
+    if defender.is_alive and calculate_type_efficiency(defender, move_data) != 0:
         defender.take_damage(move_data.ef_amount, move_data)
     else:
         _missed(attacker, battle)
@@ -1641,7 +1662,7 @@ def _ef_036(
         and defender.last_move
         and attacker.last_move_hit_by.name == defender.last_move.name
         and attacker.last_move_hit_by.category == gs.PHYSICAL
-        and calculate_type_ef(defender, move_data)
+        and calculate_type_efficiency(defender, move_data)
     ):
         defender.take_damage(attacker.last_damage_taken * 2, move_data)
     else:
@@ -1658,15 +1679,7 @@ def _ef_037(
     is_first: bool,
     cc_ib: list,
 ) -> bool:
-    if calculate_type_ef(defender, move_data):
-        if not defender.is_alive:
-            _missed(attacker, battle)
-        elif defender.invulnerable:
-            _avoided(battle, defender)
-        else:
-            defender.take_damage(attacker.level, move_data)
-    else:
-        _not_affected(battle, defender)
+    _calculate_damage(attacker, defender, battlefield, battle, move_data, fix_damage=attacker.level)
 
 
 def _ef_038(
@@ -2194,7 +2207,7 @@ def _ef_066(
     is_first: bool,
     cc_ib: list,
 ) -> bool:
-    if not defender.is_alive or calculate_type_ef(defender, move_data) == 0:
+    if not defender.is_alive or calculate_type_efficiency(defender, move_data) == 0:
         failed(battle)
     else:
         dmg = defender.max_hp // 2
@@ -2532,7 +2545,6 @@ def _ef_081(
         failed(battle)
     p_chance = min(8, 2**attacker.protect_count)
     if randrange(p_chance) < 1:
-        attacker.invulnerable = True
         attacker.protect = True
         attacker.protect_count += 1
     else:
@@ -3089,7 +3101,7 @@ def _ef_110(
         and defender.last_move
         and attacker.last_move_hit_by.name == defender.last_move.name
         and attacker.last_move_hit_by.category == gs.SPECIAL
-        and calculate_type_ef(defender, move_data)
+        and calculate_type_efficiency(defender, move_data)
     ):
         defender.take_damage(attacker.last_damage_taken * 2, move_data)
     else:
@@ -3743,7 +3755,7 @@ def _ef_142(
     if (
         defender.is_alive
         and attacker.cur_hp < defender.cur_hp
-        and calculate_type_ef(defender, move_data)
+        and calculate_type_efficiency(defender, move_data)
     ):
         defender.take_damage(defender.cur_hp - attacker.cur_hp)
     else:
