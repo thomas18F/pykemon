@@ -135,9 +135,9 @@ def _calculate_damage(
         else:
             def_ig = min(defender.stats_actual[d_stat], defender.stats_effective[d_stat])
             atk_ig = max(attacker.stats_actual[a_stat], attacker.stats_effective[a_stat])
-        ad_ratio = atk_ig / def_ig
+        attack_defense_ratio = atk_ig / def_ig
 
-        if attacker.nv_status == gs.BURNED and not attacker.has_ability("guts"):
+        if attacker.nv_status == gs.BURNED and move_data.category == gs.PHYSICAL and not attacker.has_ability("guts"):
             burn_multiplier = 0.5
         else:
             burn_multiplier = 1
@@ -157,9 +157,9 @@ def _calculate_damage(
             and (move_data.category == gs.PHYSICAL and defender.trainer.reflect)
             or (move_data.category == gs.SPECIAL and defender.trainer.light_screen)
         ):
-            screen = 0.5
+            screen_multiplier = 0.5
         else:
-            screen = 1
+            screen_multiplier = 1
         weather_multiplier = 1
         if battlefield.weather == gs.HARSH_SUNLIGHT:
             if move_data.type == "fire":
@@ -182,8 +182,8 @@ def _calculate_damage(
         item_multiplier = pi.damage_mult_items(attacker, defender, battle, move_data, type_multiplier)
 
         damage = (
-            (2 * attacker.level / 5 + 2) * move_data.power * ad_ratio
-        ) / 50 * burn_multiplier * screen * weather_multiplier + 2
+            (0.4 * attacker.level + 2) * move_data.power * attack_defense_ratio
+        ) / 50 * burn_multiplier * screen_multiplier * weather_multiplier + 2
         damage *= critical_multiplier * item_multiplier * random_multiplier * stab * type_multiplier * berry_multiplier
         damage = int(damage)
     else:
@@ -1856,7 +1856,7 @@ def _ef_048(
     is_first: bool,
     cc_ib: list,
 ) -> bool:
-    attacker.df_curl = True
+    attacker.has_defense_curl = True
     give_stat_change(attacker, battle, gs.DEF, 1)
 
 
@@ -2262,7 +2262,7 @@ def _ef_069(
 ) -> bool:
     if (
         attacker.transformed
-        or move_data not in attacker.o_moves
+        or move_data not in attacker.original_moves
         or not defender.is_alive
         or not defender.last_move
         or attacker.is_move(defender.last_move.name)
@@ -2676,19 +2676,19 @@ def _ef_089(
     is_first: bool,
     cc_ib: list,
 ) -> bool:
-    if not move_data.ef_stat:
-        if attacker.df_curl and move_data.power == move_data.o_power:
-            move_data.power *= 2
-        move_data.ef_stat = 1
-    else:
-        move_data.ef_stat += 1
-    _calculate_damage(
-        attacker, defender, battlefield, battle, move_data, cc_ib[0], cc_ib[1]
-    )
-    move_data.power *= 2
-    if move_data.ef_stat < 5:
+    power_multiplier = 2 ** attacker.move_in_a_row
+    if defender.has_defense_curl:
+        power_multiplier *= 2
+    move_data.power *= power_multiplier
+
+    dmg = _calculate_damage(attacker, defender, battlefield, battle, move_data)
+    move_data.power = move_data.original_power
+
+    if dmg != 0 and attacker.move_in_a_row < 4:
         attacker.next_moves.put(move_data)
-    return True
+        attacker.move_in_a_row += 1
+    else:
+        attacker.move_in_a_row = 0
 
 
 def _ef_090(
@@ -2742,7 +2742,7 @@ def _ef_092(
         and attacker.last_move.name == move_data.name
     ):
         move_data.ef_stat = min(5, int(attacker.last_move.ef_stat) + 1)
-        move_data.power = move_data.o_power * (2 ** (move_data.ef_stat - 1))
+        move_data.power = move_data.original_power * (2 ** (move_data.ef_stat - 1))
     else:
         move_data.ef_stat = 1
 

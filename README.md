@@ -20,11 +20,14 @@ Here are the distinctions between Pykemon and PokeBattleSim:
 - Public function now verify that Trainer or Pokemon are initialized to throw custom error if needed.
 - Pokemons can now be initialized with id.
 - Damage calculations now occurs only once.
+- Stat modification now occurs only once instead of twice by turn for each turns.
+- Burning multiplier now only occurs for physical moves.
 - Precision modifier items now correctly modify the precision.
 - Thick Fat ability now reduce damage instead of reducing precision of the move.
 - Compound Eyes precision boost is now correctly applied.
 - A pokemon can now have only one max HP (particularly useful for Shedinja).
 - A pokemon can't be used multiple time in a same team anymore.
+- Max Stats are increased to 1000 as some pokemon can reach more than 500 HP.
 - Max EVs are decreased to 252 instead of 255, as it may be consider a bug patched in games after the 6th generation.
 - Using an unstarted battle now raises a personalized exception.
 - The number of moves for Pokemons is now limited to 4.
@@ -44,6 +47,7 @@ Here are the distinctions between Pykemon and PokeBattleSim:
 - Rapid Spin now clean stealth rocks.
 - Thunder now apply his damage and have correct precision on sun and rain weather.
 - Seismic Toss and Night Shade can't hit invulnerable pokemon anymore and display the correct message when attack is avoided.
+- Rollout and Ice Ball now apply the correct amount of damage considering the different bonuses.
 
 ## Overview
 

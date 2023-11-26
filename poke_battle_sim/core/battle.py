@@ -88,68 +88,68 @@ class Battle:
         if self.is_finished():
             return
 
-        t1_move = t1_turn.copy()
-        t2_move = t2_turn.copy()
+        t1_command = t1_turn.copy()
+        t2_command = t2_turn.copy()
         t1_move_data = None
         t2_move_data = None
         t1_mv_check_bypass = False
         t2_mv_check_bypass = False
 
-        t1_move, t1_move_data, t1_mv_check_bypass = self._pre_process_move(
-            self.t1, [t1_move, t1_move_data, t1_mv_check_bypass]
+        t1_command, t1_move_data, t1_mv_check_bypass = self._pre_process_move(
+            self.t1, [t1_command, t1_move_data, t1_mv_check_bypass]
         )
-        t2_move, t2_move_data, t2_mv_check_bypass = self._pre_process_move(
-            self.t2, [t2_move, t2_move_data, t2_mv_check_bypass]
+        t2_command, t2_move_data, t2_mv_check_bypass = self._pre_process_move(
+            self.t2, [t2_command, t2_move_data, t2_mv_check_bypass]
         )
 
         if (
-            not isinstance(t1_move, list)
-            or not all(isinstance(t1_move[i], str) for i in range(len(t1_move)))
-            or len(t1_move) < 2
-            or t1_move[gs.ACTION_TYPE].lower() not in gs.ACTION_PRIORITY
+            not isinstance(t1_command, list)
+            or not all(isinstance(t1_command[i], str) for i in range(len(t1_command)))
+            or len(t1_command) < 2
+            or t1_command[gs.ACTION_TYPE].lower() not in gs.ACTION_PRIORITY
         ):
             raise Exception("Trainer 1 invalid turn action")
         if (
-            not isinstance(t2_move, list)
-            or not all(isinstance(t2_move[i], str) for i in range(len(t2_move)))
-            or len(t2_move) < 2
-            or t2_move[gs.ACTION_TYPE].lower() not in gs.ACTION_PRIORITY
+            not isinstance(t2_command, list)
+            or not all(isinstance(t2_command[i], str) for i in range(len(t2_command)))
+            or len(t2_command) < 2
+            or t2_command[gs.ACTION_TYPE].lower() not in gs.ACTION_PRIORITY
         ):
             raise Exception("Trainer 2 invalid turn action")
 
         self.t1.has_moved = False
         self.t2.has_moved = False
-        t1_move = [e.lower() for e in t1_move]
-        t2_move = [e.lower() for e in t2_move]
+        t1_command = [e.lower() for e in t1_command]
+        t2_command = [e.lower() for e in t2_command]
         self.t1_fainted = False
         self.t2_fainted = False
         self.t1.current_poke.turn_damage = False
         self.t2.current_poke.turn_damage = False
 
         if (
-            t1_move[gs.ACTION_TYPE] == gd.MOVE
+            t1_command[gs.ACTION_TYPE] == gd.MOVE
             and not t1_mv_check_bypass
-            and not self.t1.current_poke.is_move(t1_move[gs.ACTION_VALUE])
+            and not self.t1.current_poke.is_move(t1_command[gs.ACTION_VALUE])
         ):
             raise Exception("Trainer 1 attempted to use move not in Pokemon's moveset")
         if (
-            t2_move[gs.ACTION_TYPE] == gd.MOVE
+            t2_command[gs.ACTION_TYPE] == gd.MOVE
             and not t2_mv_check_bypass
-            and not self.t2.current_poke.is_move(t2_move[gs.ACTION_VALUE])
+            and not self.t2.current_poke.is_move(t2_command[gs.ACTION_VALUE])
         ):
             raise Exception("Trainer 2 attempted to use move not in Pokemon's moveset")
 
-        if not t1_move_data and t1_move[gs.ACTION_TYPE] == gd.MOVE:
-            t1_move_data = self.t1.current_poke.get_move_data(t1_move[gs.ACTION_VALUE])
+        if not t1_move_data and t1_command[gs.ACTION_TYPE] == gd.MOVE:
+            t1_move_data = self.t1.current_poke.get_move_data(t1_command[gs.ACTION_VALUE])
             if not t1_move_data:
-                t1_move_data = Move(PokeSim.get_single_move(t1_move[gs.ACTION_VALUE]))
-        if not t2_move_data and t2_move[gs.ACTION_TYPE] == gd.MOVE:
-            t2_move_data = self.t2.current_poke.get_move_data(t2_move[gs.ACTION_VALUE])
+                t1_move_data = Move(PokeSim.get_single_move(t1_command[gs.ACTION_VALUE]))
+        if not t2_move_data and t2_command[gs.ACTION_TYPE] == gd.MOVE:
+            t2_move_data = self.t2.current_poke.get_move_data(t2_command[gs.ACTION_VALUE])
             if not t2_move_data:
-                t2_move_data = Move(PokeSim.get_single_move(t2_move[gs.ACTION_VALUE]))
+                t2_move_data = Move(PokeSim.get_single_move(t2_command[gs.ACTION_VALUE]))
 
-        t1_prio = gs.ACTION_PRIORITY[t1_move[gs.ACTION_TYPE]]
-        t2_prio = gs.ACTION_PRIORITY[t2_move[gs.ACTION_TYPE]]
+        t1_prio = gs.ACTION_PRIORITY[t1_command[gs.ACTION_TYPE]]
+        t2_prio = gs.ACTION_PRIORITY[t2_command[gs.ACTION_TYPE]]
         t1_first = t1_prio >= t2_prio
         if t1_prio == 1 and t2_prio == 1:
             if t1_move_data.prio != t2_move_data.prio:
@@ -174,31 +174,31 @@ class Battle:
 
         self.add_text("Turn " + str(self.turn_count) + ":")
 
-        if self._pursuit_check(t1_move, t2_move, t1_move_data, t2_move_data, t1_first):
-            t1_first = t1_move == gd.PURSUIT
+        if self._pursuit_check(t1_command, t2_command, t1_move_data, t2_move_data, t1_first):
+            t1_first = t1_command == gd.PURSUIT
 
         if self._me_first_check(t1_move_data, t2_move_data):
-            t1_first = t1_move == gd.ME_FIRST
+            t1_first = t1_command == gd.ME_FIRST
 
-        self._focus_punch_check(t1_move, t2_move)
+        self._focus_punch_check(t1_command, t2_command)
 
         if t1_first:
             if self.t1.current_poke.is_alive:
                 # trainer 1 turn
-                self._half_turn(self.t1, self.t2, t1_move, t1_move_data)
+                self._half_turn(self.t1, self.t2, t1_command, t1_move_data)
             self._faint_check()
             if self.t2.current_poke.is_alive:
                 # trainer 2 turn
-                self._half_turn(self.t2, self.t1, t2_move, t2_move_data)
+                self._half_turn(self.t2, self.t1, t2_command, t2_move_data)
             self._faint_check()
         else:
             if self.t2.current_poke.is_alive:
                 # trainer 2 turn
-                self._half_turn(self.t2, self.t1, t2_move, t2_move_data)
+                self._half_turn(self.t2, self.t1, t2_command, t2_move_data)
             self._faint_check()
             if self.t1.current_poke.is_alive:
                 # trainer 1 turn
-                self._half_turn(self.t1, self.t2, t1_move, t1_move_data)
+                self._half_turn(self.t1, self.t2, t1_command, t1_move_data)
             self._faint_check()
 
         if self.winner:

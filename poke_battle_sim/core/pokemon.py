@@ -150,14 +150,14 @@ class Pokemon:
         self.moves = [Move(move_d) for move_d in moves_data]
         for i in range(len(self.moves)):
             self.moves[i].pos = i
-        self.o_moves = self.moves
+        self.original_moves = self.moves
 
         if ability and (
             not isinstance(ability, str) or not PokeSim.check_ability(ability.lower())
         ):
             raise Exception("Attempted to create Pokemon with invalid ability")
-        self.o_ability = ability.lower() if ability else None
-        self.ability = self.o_ability
+        self.original_ability = ability.lower() if ability else None
+        self.ability = self.original_ability
 
         if item and (not isinstance(item, str) or not PokeSim.check_item(item.lower())):
             raise Exception("Attempted to create Pokemon with invalid held item")
@@ -283,7 +283,7 @@ class Pokemon:
         self.rage = False
         self.recharging = False
         self.biding = False
-        self.df_curl = False
+        self.has_defense_curl = False
         self.protect = False
         self.endure = False
         self.transformed = False
@@ -305,8 +305,9 @@ class Pokemon:
         self.next_will_hit = False
         self.unburden = False
         self.turn_damage = False
-        self.moves = self.o_moves
-        self.ability = self.o_ability
+        self.move_in_a_row = 0
+        self.moves = self.original_moves
+        self.ability = self.original_ability
         if self.transformed:
             self.reset_transform()
         self.item = self.o_item
@@ -314,7 +315,7 @@ class Pokemon:
         self.old_pp = [move.cur_pp for move in self.moves]
         self.next_moves = Queue()
         self.types = (self.stats_base[gs.TYPE1], self.stats_base[gs.TYPE2])
-        self.stats_effective = self.stats_actual
+        self.stats_effective = [s for s in self.stats_actual]
 
     def start_battle(self, battle: bt.Battle):
         self.cur_battle = battle

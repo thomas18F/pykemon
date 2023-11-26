@@ -9,7 +9,7 @@ class Move:
         self.id = move_data[gs.MOVE_ID]
         self.name = move_data[gs.MOVE_NAME]
         self.type = move_data[gs.MOVE_TYPE]
-        self.o_power = move_data[gs.MOVE_POWER]
+        self.original_power = move_data[gs.MOVE_POWER]
         self.power = move_data[gs.MOVE_POWER]
         self.max_pp = move_data[gs.MOVE_PP]
         self.acc = move_data[gs.MOVE_ACC]
