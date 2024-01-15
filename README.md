@@ -21,6 +21,7 @@ Here are the distinctions between Pykemon and PokeBattleSim:
 - Pokemons can now be initialized with id.
 - Damage calculations now occurs only once.
 - Stat modification now occurs only once instead of twice by turn for each turns.
+- The last move is now correctly saved after each turns.
 - Burning multiplier now only occurs for physical moves.
 - Precision modifier items now correctly modify the precision.
 - Thick Fat ability now reduce damage instead of reducing precision of the move.
@@ -36,7 +37,7 @@ Here are the distinctions between Pykemon and PokeBattleSim:
 - Weather ball move now use rock type on sandstorm.
 - Embargo mechanics now cancel item usage as intended.
 - Nature Power now launch by default Tri Attack or the move associated with the terrain defined in the battle.
-- Hyper Beam, Blast Burn, Hydro Cannon, Frenzy Plant, Giga Impact, Rock Wrecker, Roar Of Time, Earthquake, Gust and Surf damages are now calculated.
+- Hyper Beam, Blast Burn, Hydro Cannon, Frenzy Plant, Giga Impact, Rock Wrecker, Roar Of Time, Fury Cutter, Earthquake, Gust and Surf damages are now calculated.
 - Fly, Dig, Bounce, Dive and Shadow Force now apply correctly the damage and on the second turn of the move instead of the first.
 - Shadow Force is now able to hit pokemon under protection.
 - Whirlpool and Low Kick now deal double damage on under water pokemons.

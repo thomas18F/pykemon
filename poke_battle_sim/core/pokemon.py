@@ -312,7 +312,7 @@ class Pokemon:
             self.reset_transform()
         self.item = self.o_item
         self.h_item = self.item
-        self.old_pp = [move.cur_pp for move in self.moves]
+        self.old_pp = [move.current_pp for move in self.moves]
         self.next_moves = Queue()
         self.types = (self.stats_base[gs.TYPE1], self.stats_base[gs.TYPE2])
         self.stats_effective = [s for s in self.stats_actual]
@@ -372,7 +372,7 @@ class Pokemon:
                     + enemy_move
                     + " lost all its PP due to the grudge!"
                 )
-                enemy_move.cur_pp = 0
+                enemy_move.current_pp = 0
             if not self.cur_battle:
                 return
             self.cur_hp = 0
@@ -420,7 +420,7 @@ class Pokemon:
                 return move
 
     def is_move(self, move_name: str) -> bool:
-        if self.copied and self.copied.cur_pp:
+        if self.copied and self.copied.current_pp:
             if move_name == self.copied.name:
                 return True
             if move_name == "mimic":
@@ -434,8 +434,8 @@ class Pokemon:
     def get_available_moves(self) -> list | None:
         if not self.next_moves.empty() or self.recharging:
             return
-        av_moves = [move for move in self.moves if not move.disabled and move.cur_pp]
-        if self.copied and self.copied.cur_pp:
+        av_moves = [move for move in self.moves if not move.disabled and move.current_pp]
+        if self.copied and self.copied.current_pp:
             for i in range(len(av_moves)):
                 if av_moves[i].name == "mimic":
                     av_moves[i] = self.copied
@@ -487,7 +487,7 @@ class Pokemon:
         self.moves = [move.get_tcopy() for move in target.moves]
         for move in self.moves:
             move.max_pp = min(5, move.max_pp)
-            move.cur_pp = move.max_pp
+            move.current_pp = move.max_pp
         self.stats_actual = target.stats_actual
         self.stat_stages = target.stat_stages
         self.accuracy_stage = target.accuracy_stage
@@ -542,7 +542,7 @@ class Pokemon:
     def update_last_moves(self):
         if self.last_move_next:
             self.last_move = self.last_move_next
-            self.last_move = None
+            self.last_move_next = None
         if self.last_successful_move_next:
             self.last_successful_move = self.last_successful_move_next
             self.last_successful_move_next = None
@@ -554,7 +554,7 @@ class Pokemon:
 
     def no_pp(self) -> bool:
         return all(
-            not move.cur_pp or move.disabled or move.encore_blocked
+            not move.current_pp or move.disabled or move.encore_blocked
             for move in self.get_available_moves()
         )
 
@@ -676,14 +676,14 @@ class Pokemon:
     def restore_pp(self, move_name: str, amount: int):
         for move in self.moves:
             if move.name == move_name:
-                move.cur_pp = min(move.cur_pp + amount, move.max_pp)
+                move.current_pp = min(move.current_pp + amount, move.max_pp)
         self.cur_battle.add_text(
             self.nickname + "'s " + pm.cap_name(move_name) + "'s pp was restored!"
         )
 
     def restore_all_pp(self, amount: int):
         for move in self.moves:
-            move.cur_pp = min(move.cur_pp + amount, move.max_pp)
+            move.current_pp = min(move.current_pp + amount, move.max_pp)
         self.cur_battle.add_text(self.nickname + "'s move's pp were restored!")
 
     def _must_be_in_battle(self):

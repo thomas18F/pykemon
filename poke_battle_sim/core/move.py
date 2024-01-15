@@ -20,13 +20,13 @@ class Move:
         self.ef_chance = move_data[gs.MOVE_EFFECT_CHANCE]
         self.ef_amount = move_data[gs.MOVE_EFFECT_AMT]
         self.ef_stat = move_data[gs.MOVE_EFFECT_STAT]
-        self.cur_pp = self.max_pp
+        self.current_pp = self.max_pp
         self.pos = None
         self.disabled = 0
         self.encore_blocked = False
 
     def reset(self):
-        self.cur_pp = self.max_pp
+        self.current_pp = self.max_pp
         self.pos = None
         self.disabled = 0
         self.encore_blocked = False
@@ -45,7 +45,7 @@ class Move:
         copy.ef_id = self.ef_id
         copy.ef_amount = self.ef_amount
         copy.ef_stat = self.ef_stat
-        copy.cur_pp = self.cur_pp
+        copy.current_pp = self.current_pp
         copy.pos = self.pos
         copy.disabled = self.disabled
         return copy

@@ -283,7 +283,7 @@ class Battle:
     def _process_pp(self, attacker: pk.Pokemon, move_data: Move) -> bool:
         if move_data.name == "struggle" or attacker.rage or attacker.uproar:
             return True
-        if move_data.cur_pp <= 0:
+        if move_data.current_pp <= 0:
             raise Exception("Trainer attempted to use move that has no pp left")
         is_disabled = move_data.disabled
         attacker.reduce_disabled_count()
@@ -291,13 +291,13 @@ class Battle:
             self.add_text(move_data.name + " is disabled!")
             return False
         if not (move_data.name in gd.TWO_TURN_CHECK and not move_data.ef_stat):
-            move_data.cur_pp -= 1
+            move_data.current_pp -= 1
             self._pressure_check(attacker, move_data)
-        if not move_data.cur_pp and attacker.item == "leppa-berry":
+        if not move_data.current_pp and attacker.item == "leppa-berry":
             pi._eat_item(attacker, self)
             attacker.restore_pp(move_data.name, 10)
         if (
-            move_data.cur_pp == 0
+            move_data.current_pp == 0
             and attacker.copied
             and move_data.name == attacker.copied.name
         ):
@@ -698,7 +698,7 @@ class Battle:
                 and not t1_first
             )
         ):
-            t1_move_data.cur_pp -= 1
+            t1_move_data.current_pp -= 1
             self._pressure_check(self.t1.current_poke, t1_move_data)
             t1_move_data = t1_move_data.get_tcopy()
             t1_move_data.power *= 2
@@ -711,7 +711,7 @@ class Battle:
                 and t1_first
             )
         ):
-            t2_move_data.cur_pp -= 1
+            t2_move_data.current_pp -= 1
             self._pressure_check(self.t2.current_poke, t2_move_data)
             t2_move_data = t2_move_data.get_tcopy()
             t2_move_data.power *= 2
@@ -797,11 +797,11 @@ class Battle:
 
     def _pressure_check(self, attacker: pk.Pokemon, move_data: Move):
         if (
-            move_data.cur_pp
+            move_data.current_pp
             and attacker.enemy.current_poke.is_alive
             and attacker.enemy.current_poke.has_ability("pressure")
         ):
-            move_data.cur_pp -= 1
+            move_data.current_pp -= 1
 
     def _prio_boost_check(self, t1_first: bool) -> bool:
         if self.t1.current_poke.prio_boost and self.t2.current_poke.prio_boost:

@@ -180,8 +180,8 @@ class TestBattle(unittest.TestCase):
     def test_no_pp_on_all_moves(self, mock_calculate_crit):
         pokemon_1 = Pokemon(1, 22, ["tackle", "thunder"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
         self.assertEqual(2, len(pokemon_1.moves))
-        pokemon_1.moves[0].cur_pp = 0
-        pokemon_1.moves[1].cur_pp = 0
+        pokemon_1.moves[0].current_pp = 0
+        pokemon_1.moves[1].current_pp = 0
         trainer_1 = Trainer('Ash', [pokemon_1])
 
         pokemon_2 = Pokemon(4, 22, ["tackle"], "male", stats_actual=[1, 100, 100, 100, 100, 1])
@@ -215,7 +215,7 @@ class TestBattle(unittest.TestCase):
             pokemon_1 = Pokemon(1, 22, ["tackle", "thunder"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
             self.assertEqual(2, len(pokemon_1.moves))
 
-            pokemon_1.moves[0].cur_pp = 0
+            pokemon_1.moves[0].current_pp = 0
             trainer_1 = Trainer('Ash', [pokemon_1])
 
             pokemon_2 = Pokemon(4, 22, ["tackle"], "male", stats_actual=[1, 100, 100, 100, 100, 1])
@@ -397,7 +397,7 @@ class TestBattle(unittest.TestCase):
     @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_use_pp_restore_item(self, mock_calculate_crit):
         pokemon_1 = Pokemon(1, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
-        pokemon_1.moves[0].cur_pp = 15
+        pokemon_1.moves[0].current_pp = 15
         trainer_1 = Trainer('Ash', [pokemon_1])
 
         pokemon_2 = Pokemon(5, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
@@ -424,7 +424,7 @@ class TestBattle(unittest.TestCase):
         self.assertEqual(1, battle.turn_count)
         self.assertIsNone(battle.winner)
         self.assertEqual(expected_battle_text, battle.get_all_text())
-        self.assertEqual(25, battle.t1.current_poke.moves[0].cur_pp)
+        self.assertEqual(25, battle.t1.current_poke.moves[0].current_pp)
 
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
     @patch('poke_battle_sim.util.process_move._calculate_is_critical')
@@ -1570,7 +1570,7 @@ class TestBattle(unittest.TestCase):
     @patch('poke_battle_sim.util.process_move._calculate_is_critical')
     def test_struggle(self, mock_calculate_crit, mock_calculate_multiplier):
         pokemon_1 = Pokemon(1, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
-        pokemon_1.moves[0].cur_pp = 0
+        pokemon_1.moves[0].current_pp = 0
         trainer_1 = Trainer('Ash', [pokemon_1])
 
         pokemon_2 = Pokemon(4, 22, ["splash"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
@@ -3561,7 +3561,6 @@ class TestBattle(unittest.TestCase):
             'BULBASAUR used Ice Ball!',
             "It's not very effective..."
         ]
-
         self.assertEqual(expected_battle_text, battle.get_all_text())
 
         self.assertEqual(95, pokemon_2.cur_hp)
@@ -3571,6 +3570,233 @@ class TestBattle(unittest.TestCase):
         self.assertEqual(trainer_2, battle.t2)
         self.assertEqual(1, battle.turn_count)
         self.assertIsNone(battle.winner)
+
+    @patch('poke_battle_sim.util.process_move.get_move_precision')
+    @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
+    def test_fury_cutter(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision):
+        pokemon_1 = Pokemon(1, 22, ["fury-cutter"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
+        trainer_1 = Trainer('Ash', [pokemon_1])
+
+        pokemon_2 = Pokemon(4, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
+        trainer_2 = Trainer('Misty', [pokemon_2])
+
+        battle = Battle(trainer_1, trainer_2)
+        battle.start()
+
+        mock_calculate_crit.return_value = False
+        mock_calculate_multiplier.return_value = 1.0
+        mock_move_precision.return_value = 95
+        battle.turn(["move", "fury-cutter"], ["move", "tackle"])
+
+        expected_battle_text = [
+            'Ash sent out BULBASAUR!',
+            'Misty sent out CHARMANDER!',
+            'Turn 1:',
+            'BULBASAUR used Fury Cutter!',
+            "It's not very effective...",
+            'CHARMANDER used Tackle!'
+        ]
+
+        self.assertEqual(1, pokemon_1.move_in_a_row)
+        self.assertEqual("fury-cutter", pokemon_1.last_move.name)
+        self.assertEqual(95, pokemon_2.cur_hp)
+
+        self.assertTrue(battle.battle_started)
+        self.assertEqual(trainer_1, battle.t1)
+        self.assertEqual(trainer_2, battle.t2)
+        self.assertEqual(1, battle.turn_count)
+        self.assertIsNone(battle.winner)
+        self.assertEqual(expected_battle_text, battle.get_all_text())
+
+    @patch('poke_battle_sim.util.process_move.get_move_precision')
+    @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
+    def test_fury_cutter_damage_scale(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision):
+        pokemon_1 = Pokemon(1, 22, ["fury-cutter"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
+        trainer_1 = Trainer('Ash', [pokemon_1])
+
+        pokemon_2 = Pokemon(4, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
+        trainer_2 = Trainer('Misty', [pokemon_2])
+
+        battle = Battle(trainer_1, trainer_2)
+        battle.start()
+
+        mock_calculate_crit.return_value = False
+        mock_calculate_multiplier.return_value = 1.0
+        mock_move_precision.return_value = 95
+
+        battle.turn(["move", "fury-cutter"], ["move", "tackle"])
+
+        self.assertEqual(1, pokemon_1.move_in_a_row)
+        self.assertEqual("fury-cutter", pokemon_1.last_move.name)
+        self.assertEqual(19, pokemon_1.moves[0].current_pp)
+        self.assertEqual(95, pokemon_2.cur_hp)
+
+        battle.turn(["move", "fury-cutter"], ["move", "tackle"])
+
+        self.assertEqual(2, pokemon_1.move_in_a_row)
+        self.assertEqual("fury-cutter", pokemon_1.last_move.name)
+        self.assertEqual(18, pokemon_1.moves[0].current_pp)
+        self.assertEqual(86, pokemon_2.cur_hp)
+
+        battle.turn(["move", "fury-cutter"], ["move", "tackle"])
+
+        self.assertEqual(3, pokemon_1.move_in_a_row)
+        self.assertEqual("fury-cutter", pokemon_1.last_move.name)
+        self.assertEqual(17, pokemon_1.moves[0].current_pp)
+        self.assertEqual(68, pokemon_2.cur_hp)
+
+        expected_battle_text = [
+            'Ash sent out BULBASAUR!',
+            'Misty sent out CHARMANDER!',
+            'Turn 1:',
+            'BULBASAUR used Fury Cutter!',
+            "It's not very effective...",
+            'CHARMANDER used Tackle!',
+            'Turn 2:',
+            'BULBASAUR used Fury Cutter!',
+            "It's not very effective...",
+            'CHARMANDER used Tackle!',
+            'Turn 3:',
+            'BULBASAUR used Fury Cutter!',
+            "It's not very effective...",
+            'CHARMANDER used Tackle!'
+        ]
+        self.assertEqual(expected_battle_text, battle.get_all_text())
+
+        self.assertTrue(battle.battle_started)
+        self.assertEqual(trainer_1, battle.t1)
+        self.assertEqual(trainer_2, battle.t2)
+        self.assertEqual(3, battle.turn_count)
+        self.assertIsNone(battle.winner)
+
+    @patch('poke_battle_sim.util.process_move.get_move_precision')
+    @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
+    def test_fury_cutter_then_rollout(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision):
+        pokemon_1 = Pokemon(1, 22, ["fury-cutter", "rollout"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
+        trainer_1 = Trainer('Ash', [pokemon_1])
+
+        pokemon_2 = Pokemon(4, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
+        trainer_2 = Trainer('Misty', [pokemon_2])
+
+        battle = Battle(trainer_1, trainer_2)
+        battle.start()
+
+        mock_calculate_crit.return_value = False
+        mock_calculate_multiplier.return_value = 1.0
+        mock_move_precision.return_value = 90
+
+        battle.turn(["move", "fury-cutter"], ["move", "tackle"])
+
+        self.assertEqual(1, pokemon_1.move_in_a_row)
+        self.assertEqual("fury-cutter", pokemon_1.last_move.name)
+        self.assertEqual(19, pokemon_1.moves[0].current_pp)
+        self.assertEqual(95, pokemon_2.cur_hp)
+
+        battle.turn(["move", "fury-cutter"], ["move", "tackle"])
+
+        self.assertEqual(2, pokemon_1.move_in_a_row)
+        self.assertEqual("fury-cutter", pokemon_1.last_move.name)
+        self.assertEqual(18, pokemon_1.moves[0].current_pp)
+        self.assertEqual(86, pokemon_2.cur_hp)
+
+        battle.turn(["move", "rollout"], ["move", "tackle"])
+
+        self.assertEqual(1, pokemon_1.move_in_a_row)
+        self.assertEqual("rollout", pokemon_1.last_move.name)
+        self.assertEqual(19, pokemon_1.moves[1].current_pp)
+        self.assertEqual(70, pokemon_2.cur_hp)
+
+        expected_battle_text = [
+            'Ash sent out BULBASAUR!',
+            'Misty sent out CHARMANDER!',
+            'Turn 1:',
+            'BULBASAUR used Fury Cutter!',
+            "It's not very effective...",
+            'CHARMANDER used Tackle!',
+            'Turn 2:',
+            'BULBASAUR used Fury Cutter!',
+            "It's not very effective...",
+            'CHARMANDER used Tackle!',
+            'Turn 3:',
+            'BULBASAUR used Rollout!',
+            "It's super effective!",
+            'CHARMANDER used Tackle!'
+        ]
+        self.assertEqual(expected_battle_text, battle.get_all_text())
+
+        self.assertTrue(battle.battle_started)
+        self.assertEqual(trainer_1, battle.t1)
+        self.assertEqual(trainer_2, battle.t2)
+        self.assertEqual(3, battle.turn_count)
+        self.assertIsNone(battle.winner)
+
+    @patch('poke_battle_sim.util.process_move.get_move_precision')
+    @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
+    def test_fury_cutter_damage_reset_on_miss(self, mock_calculate_crit, mock_calculate_multiplier, mock_move_precision):
+        pokemon_1 = Pokemon(1, 22, ["fury-cutter"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
+        trainer_1 = Trainer('Ash', [pokemon_1])
+
+        pokemon_2 = Pokemon(4, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
+        trainer_2 = Trainer('Misty', [pokemon_2])
+
+        battle = Battle(trainer_1, trainer_2)
+        battle.start()
+
+        mock_calculate_crit.return_value = False
+        mock_calculate_multiplier.return_value = 1.0
+
+        mock_move_precision.return_value = 95
+        battle.turn(["move", "fury-cutter"], ["move", "tackle"])
+
+        self.assertEqual(1, pokemon_1.move_in_a_row)
+        self.assertEqual("fury-cutter", pokemon_1.last_move.name)
+        self.assertEqual(19, pokemon_1.moves[0].current_pp)
+        self.assertEqual(95, pokemon_2.cur_hp)
+
+        mock_move_precision.return_value = 96
+        battle.turn(["move", "fury-cutter"], ["move", "tackle"])
+
+        self.assertEqual(1, pokemon_1.move_in_a_row)
+        self.assertEqual("fury-cutter", pokemon_1.last_move.name)
+        self.assertEqual(18, pokemon_1.moves[0].current_pp)
+        self.assertEqual(95, pokemon_2.cur_hp)
+
+        mock_move_precision.return_value = 95
+        battle.turn(["move", "fury-cutter"], ["move", "tackle"])
+
+        self.assertEqual(1, pokemon_1.move_in_a_row)
+        self.assertEqual("fury-cutter", pokemon_1.last_move.name)
+        self.assertEqual(17, pokemon_1.moves[0].current_pp)
+        self.assertEqual(90, pokemon_2.cur_hp)
+
+        expected_battle_text = [
+            'Ash sent out BULBASAUR!',
+            'Misty sent out CHARMANDER!',
+            'Turn 1:',
+            'BULBASAUR used Fury Cutter!',
+            "It's not very effective...",
+            'CHARMANDER used Tackle!',
+            'Turn 2:',
+            'BULBASAUR used Fury Cutter!',
+            "BULBASAUR's attack missed!",
+            'CHARMANDER used Tackle!',
+            'Turn 3:',
+            'BULBASAUR used Fury Cutter!',
+            "It's not very effective...",
+            'CHARMANDER used Tackle!'
+        ]
+        self.assertEqual(expected_battle_text, battle.get_all_text())
+
+        self.assertTrue(battle.battle_started)
+        self.assertEqual(trainer_1, battle.t1)
+        self.assertEqual(trainer_2, battle.t2)
+        self.assertEqual(3, battle.turn_count)
+        self.assertIsNone(battle.winner)
+
 
 if __name__ == '__main__':
     unittest.main()

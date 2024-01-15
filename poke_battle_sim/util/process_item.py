@@ -191,9 +191,9 @@ def can_use_item(
     elif item == "guard-spec.":
         return not trainer.mist
     elif item == "ether" or item == "max-ether" or item == "leppa-berry":
-        return move and move.cur_pp < move.max_pp
+        return move and move.current_pp < move.max_pp
     elif item == "elixir" or item == "max-elixir":
-        return any([move.cur_pp < move.max_pp for move in poke.moves])
+        return any([move.current_pp < move.max_pp for move in poke.moves])
     return True
 
 
