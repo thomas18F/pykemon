@@ -2816,10 +2816,13 @@ class TestBattle(unittest.TestCase):
 
         self.assertEqual(1, pokemon_1.invulnerability_count)
         self.assertEqual(100, pokemon_2.cur_hp)
+        self.assertEqual(14, pokemon_1.moves[0].current_pp)
 
         battle.turn(["move", "fly"], ["move", "tackle"])
 
         self.assertEqual(0, pokemon_1.invulnerability_count)
+        self.assertEqual(79, pokemon_2.cur_hp)
+        self.assertEqual(14, pokemon_1.moves[0].current_pp)
 
         expected_battle_text = [
             'Ash sent out BULBASAUR!',
@@ -2832,10 +2835,7 @@ class TestBattle(unittest.TestCase):
             'BULBASAUR used Fly!',
             'CHARMANDER used Tackle!'
         ]
-
         self.assertEqual(expected_battle_text, battle.get_all_text())
-
-        self.assertEqual(79, pokemon_2.cur_hp)
 
         self.assertTrue(battle.battle_started)
         self.assertEqual(trainer_1, battle.t1)
@@ -2901,11 +2901,14 @@ class TestBattle(unittest.TestCase):
         battle.turn(["move", "dig"], ["move", "tackle"])
 
         self.assertEqual(1, pokemon_1.invulnerability_count)
+        self.assertEqual(9, pokemon_1.moves[0].current_pp)
         self.assertEqual(100, pokemon_2.cur_hp)
 
         battle.turn(["move", "dig"], ["move", "tackle"])
 
         self.assertEqual(0, pokemon_1.invulnerability_count)
+        self.assertEqual(9, pokemon_1.moves[0].current_pp)
+        self.assertEqual(62, pokemon_2.cur_hp)
 
         expected_battle_text = [
             'Ash sent out BULBASAUR!',
@@ -2919,10 +2922,7 @@ class TestBattle(unittest.TestCase):
             "It's super effective!",
             'CHARMANDER used Tackle!'
         ]
-
         self.assertEqual(expected_battle_text, battle.get_all_text())
-
-        self.assertEqual(62, pokemon_2.cur_hp)
 
         self.assertTrue(battle.battle_started)
         self.assertEqual(trainer_1, battle.t1)
@@ -2990,10 +2990,13 @@ class TestBattle(unittest.TestCase):
 
         self.assertEqual(1, pokemon_1.invulnerability_count)
         self.assertEqual(100, pokemon_2.cur_hp)
+        self.assertEqual(9, pokemon_1.moves[0].current_pp)
 
         battle.turn(["move", "dive"], ["move", "tackle"])
 
         self.assertEqual(0, pokemon_1.invulnerability_count)
+        self.assertEqual(62, pokemon_2.cur_hp)
+        self.assertEqual(9, pokemon_1.moves[0].current_pp)
 
         expected_battle_text = [
             'Ash sent out BULBASAUR!',
@@ -3007,10 +3010,7 @@ class TestBattle(unittest.TestCase):
             "It's super effective!",
             'CHARMANDER used Tackle!'
         ]
-
         self.assertEqual(expected_battle_text, battle.get_all_text())
-
-        self.assertEqual(62, pokemon_2.cur_hp)
 
         self.assertTrue(battle.battle_started)
         self.assertEqual(trainer_1, battle.t1)
@@ -3079,10 +3079,13 @@ class TestBattle(unittest.TestCase):
 
         self.assertEqual(1, pokemon_1.invulnerability_count)
         self.assertEqual(100, pokemon_2.cur_hp)
+        self.assertEqual(4, pokemon_1.moves[0].current_pp)
 
         battle.turn(["move", "bounce"], ["move", "tackle"])
 
         self.assertEqual(0, pokemon_1.invulnerability_count)
+        self.assertEqual(80, pokemon_2.cur_hp)
+        self.assertEqual(4, pokemon_1.moves[0].current_pp)
 
         expected_battle_text = [
             'Ash sent out BULBASAUR!',
@@ -3095,10 +3098,7 @@ class TestBattle(unittest.TestCase):
             'BULBASAUR used Bounce!',
             'CHARMANDER used Tackle!'
         ]
-
         self.assertEqual(expected_battle_text, battle.get_all_text())
-
-        self.assertEqual(80, pokemon_2.cur_hp)
 
         self.assertTrue(battle.battle_started)
         self.assertEqual(trainer_1, battle.t1)
@@ -3166,10 +3166,13 @@ class TestBattle(unittest.TestCase):
 
         self.assertEqual(1, pokemon_1.invulnerability_count)
         self.assertEqual(100, pokemon_2.cur_hp)
+        self.assertEqual(4, pokemon_1.moves[0].current_pp)
 
         battle.turn(["move", "shadow-force"], ["move", "tackle"])
 
         self.assertEqual(0, pokemon_1.invulnerability_count)
+        self.assertEqual(73, pokemon_2.cur_hp)
+        self.assertEqual(4, pokemon_1.moves[0].current_pp)
 
         expected_battle_text = [
             'Ash sent out BULBASAUR!',
@@ -3183,10 +3186,7 @@ class TestBattle(unittest.TestCase):
             'BULBASAUR used Shadow Force!',
             'CHARMANDER used Tackle!'
         ]
-
         self.assertEqual(expected_battle_text, battle.get_all_text())
-
-        self.assertEqual(73, pokemon_2.cur_hp)
 
         self.assertTrue(battle.battle_started)
         self.assertEqual(trainer_1, battle.t1)
@@ -3303,6 +3303,7 @@ class TestBattle(unittest.TestCase):
         ]
 
         self.assertEqual(84, pokemon_2.cur_hp)
+        self.assertEqual(19, pokemon_1.moves[0].current_pp)
 
         self.assertTrue(battle.battle_started)
         self.assertEqual(trainer_1, battle.t1)
@@ -3338,10 +3339,10 @@ class TestBattle(unittest.TestCase):
             'BULBASAUR used Rollout!',
             "It's super effective!"
         ]
-
         self.assertEqual(expected_battle_text, battle.get_all_text())
 
         self.assertEqual(79, pokemon_2.cur_hp)
+        self.assertEqual(19, pokemon_1.moves[0].current_pp)
 
         self.assertTrue(battle.battle_started)
         self.assertEqual(trainer_1, battle.t1)
@@ -3370,31 +3371,37 @@ class TestBattle(unittest.TestCase):
         expected_hp = 500 - 16
         self.assertEqual(expected_hp, pokemon_2.cur_hp)
         self.assertEqual(1, pokemon_1.move_in_a_row)
+        self.assertEqual(19, pokemon_1.moves[0].current_pp)
 
         battle.turn(["move", "rollout"], ["move", "tackle"])
         expected_hp -= 29
         self.assertEqual(expected_hp, pokemon_2.cur_hp)
         self.assertEqual(2, pokemon_1.move_in_a_row)
+        self.assertEqual(19, pokemon_1.moves[0].current_pp)
 
         battle.turn(["move", "rollout"], ["move", "tackle"])
         expected_hp -= 55
         self.assertEqual(expected_hp, pokemon_2.cur_hp)
         self.assertEqual(3, pokemon_1.move_in_a_row)
+        self.assertEqual(19, pokemon_1.moves[0].current_pp)
 
         battle.turn(["move", "rollout"], ["move", "tackle"])
         expected_hp -= 107
         self.assertEqual(expected_hp, pokemon_2.cur_hp)
         self.assertEqual(4, pokemon_1.move_in_a_row)
+        self.assertEqual(19, pokemon_1.moves[0].current_pp)
 
         battle.turn(["move", "rollout"], ["move", "tackle"])
         expected_hp -= 211
         self.assertEqual(expected_hp, pokemon_2.cur_hp)
         self.assertEqual(0, pokemon_1.move_in_a_row)
+        self.assertEqual(19, pokemon_1.moves[0].current_pp)
 
         battle.turn(["move", "rollout"], ["move", "tackle"])
         expected_hp -= 16
         self.assertEqual(expected_hp, pokemon_2.cur_hp)
         self.assertEqual(1, pokemon_1.move_in_a_row)
+        self.assertEqual(18, pokemon_1.moves[0].current_pp)
 
         expected_battle_text = [
             'Ash sent out BULBASAUR!',
@@ -3453,21 +3460,25 @@ class TestBattle(unittest.TestCase):
         expected_hp = 500 - 16
         self.assertEqual(expected_hp, pokemon_2.cur_hp)
         self.assertEqual(1, pokemon_1.move_in_a_row)
+        self.assertEqual(19, pokemon_1.moves[0].current_pp)
 
         battle.turn(["move", "rollout"], ["move", "defense-curl"])
         expected_hp -= 29
         self.assertEqual(expected_hp, pokemon_2.cur_hp)
         self.assertEqual(2, pokemon_1.move_in_a_row)
+        self.assertEqual(19, pokemon_1.moves[0].current_pp)
 
         battle.turn(["move", "rollout"], ["move", "tackle"])
         expected_hp -= 73
         self.assertEqual(expected_hp, pokemon_2.cur_hp)
         self.assertEqual(3, pokemon_1.move_in_a_row)
+        self.assertEqual(19, pokemon_1.moves[0].current_pp)
 
         battle.turn(["move", "rollout"], ["move", "tackle"])
         expected_hp -= 142
         self.assertEqual(expected_hp, pokemon_2.cur_hp)
         self.assertEqual(4, pokemon_1.move_in_a_row)
+        self.assertEqual(19, pokemon_1.moves[0].current_pp)
 
         expected_battle_text = [
             'Ash sent out BULBASAUR!',
@@ -3514,6 +3525,7 @@ class TestBattle(unittest.TestCase):
         mock_calculate_crit.return_value = False
         mock_calculate_multiplier.return_value = 1.0
         mock_move_precision.return_value = 90
+
         battle.turn(["move", "ice-ball"], ["move", "tackle"])
 
         expected_battle_text = [
@@ -3524,15 +3536,16 @@ class TestBattle(unittest.TestCase):
             "It's not very effective...",
             'CHARMANDER used Tackle!'
         ]
+        self.assertEqual(expected_battle_text, battle.get_all_text())
 
         self.assertEqual(96, pokemon_2.cur_hp)
+        self.assertEqual(19, pokemon_1.moves[0].current_pp)
 
         self.assertTrue(battle.battle_started)
         self.assertEqual(trainer_1, battle.t1)
         self.assertEqual(trainer_2, battle.t2)
         self.assertEqual(1, battle.turn_count)
         self.assertIsNone(battle.winner)
-        self.assertEqual(expected_battle_text, battle.get_all_text())
 
     @patch('poke_battle_sim.util.process_move.get_move_precision')
     @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
