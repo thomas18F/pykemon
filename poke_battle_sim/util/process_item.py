@@ -191,9 +191,9 @@ def can_use_item(
     elif item == "guard-spec.":
         return not trainer.mist
     elif item == "ether" or item == "max-ether" or item == "leppa-berry":
-        return move and move.cur_pp < move.max_pp
+        return move and move.current_pp < move.max_pp
     elif item == "elixir" or item == "max-elixir":
-        return any([move.cur_pp < move.max_pp for move in poke.moves])
+        return any([move.current_pp < move.max_pp for move in poke.moves])
     return True
 
 
@@ -392,7 +392,7 @@ def on_damage_items(poke: pk.Pokemon, battle: bt.Battle, move_data: Move):
     elif item == "custap-berry":
         poke.prio_boost = True
     elif item == "enigma-berry":
-        t_mult = pm.calculate_type_ef(poke, move_data)
+        t_mult = pm.calculate_type_efficiency(poke, move_data)
         if t_mult and t_mult > 1:
             _eat_item(poke, battle)
             poke.heal(max(1, poke.max_hp // 4))
@@ -546,7 +546,7 @@ def on_hit_items(
             attacker.give_item("sticky-barb")
 
 
-def homc_items(
+def calculate_precision_modifier_items(
     attacker: pk.Pokemon,
     defender: pk.Pokemon,
     battlefield: bf.Battlefield,
@@ -556,24 +556,16 @@ def homc_items(
 ) -> float:
     i_mult = 1
 
-    if (
-        defender.item not in gd.HOMC_ITEM_CHECK
-        or defender.has_ability("klutz")
-        or defender.embargo_count
-    ) and (
-        attacker.item not in gd.HOMC_ITEM_CHECK
-        or attacker.has_ability("klutz")
-        or attacker.embargo_count
-    ):
-        return i_mult
-
-    if defender.item == "brightpowder" or defender.item == "lax-incense":
+    if (defender.item == "brightpowder" or defender.item == "lax-incense") and \
+            not defender.has_ability("klutz") and \
+            not defender.embargo_count:
         i_mult *= 0.9
 
-    if attacker.item == "wide-lens":
-        i_mult *= 1.1
-    elif attacker.item == "zoom-lens" and not is_first:
-        i_mult *= 1.2
+    if not attacker.has_ability("klutz") and not attacker.embargo_count:
+        if attacker.item == "wide-lens":
+            i_mult *= 1.1
+        elif attacker.item == "zoom-lens" and not is_first:
+            i_mult *= 1.2
 
     return i_mult
 

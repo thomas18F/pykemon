@@ -35,8 +35,8 @@ class TestUseItem(unittest.TestCase):
             'Ash used one Oran Berry on BULBASAUR!',
             'BULBASAUR regained health!'
         ]
-        self.assertEqual(battle.get_cur_text(), expected_current_text)
-        self.assertEqual(battle.t1.current_poke.cur_hp, 60)
+        self.assertEqual(expected_current_text, battle.get_cur_text())
+        self.assertEqual(60, battle.t1.current_poke.cur_hp)
 
 
 if __name__ == '__main__':

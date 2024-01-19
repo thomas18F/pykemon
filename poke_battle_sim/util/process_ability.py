@@ -86,7 +86,7 @@ def selection_abilities(
     elif poke.has_ability("anticipation") and poke.enemy.current_poke.is_alive:
         if any(
             [
-                pm.calculate_type_ef(poke, move) > 1 or move.id in [20, 55, 62]
+                pm.calculate_type_efficiency(poke, move) > 1 or move.id in [20, 55, 62]
                 for move in poke.enemy.current_poke.moves
             ]
         ):
@@ -142,7 +142,7 @@ def enemy_selection_abilities(
     elif poke.has_ability("anticipation") and poke.enemy.current_poke.is_alive:
         if any(
             [
-                pm.calculate_type_ef(poke, move) > 1 or move.id in [20, 55, 62]
+                pm.calculate_type_efficiency(poke, move) > 1 or move.id in [20, 55, 62]
                 for move in poke.enemy.current_poke.moves
             ]
         ):
@@ -228,7 +228,7 @@ def on_hit_abilities(
         )
     elif (
             defender.has_ability("wonder-guard")
-            and pm.calculate_type_ef(defender, move_data) < 2
+            and pm.calculate_type_efficiency(defender, move_data) < 2
     ):
         battle.add_text("It doesn't affect " + defender.nickname)
         return True
@@ -352,7 +352,7 @@ def damage_calc_abilities(
         move_data.power *= 0.75
 
 
-def homc_abilities(
+def calculate_precision_modifier_abilities(
     attacker: pk.Pokemon,
     defender: pk.Pokemon,
     battlefield: bf.Battlefield,
@@ -364,15 +364,11 @@ def homc_abilities(
         ability_mult *= 0.8
     elif defender.has_ability("snow-cloak") and battlefield.weather == gs.HAIL:
         ability_mult *= 0.8
-    elif defender.has_ability("compound-eyes"):
+    elif attacker.has_ability("compound-eyes"):
         ability_mult *= 1.3
     elif defender.has_ability("hustle") and move_data.category == gs.PHYSICAL:
         ability_mult *= 0.8
     elif defender.has_ability("tangled-feet") and defender.v_status[gs.CONFUSED]:
-        ability_mult *= 0.5
-    elif defender.has_ability("thick-fat") and (
-        move_data.type == "fire" or move_data.type == "ice"
-    ):
         ability_mult *= 0.5
     return ability_mult
 

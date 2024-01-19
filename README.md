@@ -16,25 +16,40 @@ Here are the distinctions between Pykemon and PokeBattleSim:
 - Possibility to create a battle with a weather.
 
 #### Fixes
+- The is_valid_action function now ask the correct test function for item action.
+- Public function now verify that Trainer or Pokemon are initialized to throw custom error if needed.
 - Pokemons can now be initialized with id.
 - Damage calculations now occurs only once.
+- Stat modification now occurs only once instead of twice by turn for each turns.
+- The last move is now correctly saved after each turns.
+- Burning multiplier now only occurs for physical moves.
+- Precision modifier items now correctly modify the precision.
+- Thick Fat ability now reduce damage instead of reducing precision of the move.
+- Compound Eyes precision boost is now correctly applied.
 - A pokemon can now have only one max HP (particularly useful for Shedinja).
 - A pokemon can't be used multiple time in a same team anymore.
+- Max Stats are increased to 1000 as some pokemon can reach more than 500 HP.
 - Max EVs are decreased to 252 instead of 255, as it may be consider a bug patched in games after the 6th generation.
 - Using an unstarted battle now raises a personalized exception.
 - The number of moves for Pokemons is now limited to 4.
 - Crashes upon using items have been corrected.
-- fix messages on cure with natural-cure ability.
+- Fix messages on cure with natural-cure ability.
 - Weather ball move now use rock type on sandstorm.
 - Embargo mechanics now cancel item usage as intended.
 - Nature Power now launch by default Tri Attack or the move associated with the terrain defined in the battle.
-- Earthquake, Gust and Surf damages are now calculated.
+- Hyper Beam, Blast Burn, Hydro Cannon, Frenzy Plant, Giga Impact, Rock Wrecker, Roar Of Time, Fury Cutter, Razor Wind, Earthquake, Gust and Surf damages are now calculated.
+- Ice Ball, Fly, Dive, Bounce, Dig and Shadow Force pps are now correctly consumed.
+- Fly, Dig, Bounce, Dive and Shadow Force now apply correctly the damage and on the second turn of the move instead of the first.
+- Shadow Force is now able to hit pokemon under protection.
 - Whirlpool and Low Kick now deal double damage on under water pokemons.
 - Heal Block now work as intended.
 - Stomp now break through opponent evasion if caused by Minimize.
 - Stealth Rock is now taken into account.
 - Defog now clear all hazards on the attacking pokemon side and remove fog from the battlefield.
 - Rapid Spin now clean stealth rocks.
+- Thunder now apply his damage and have correct precision on sun and rain weather.
+- Seismic Toss and Night Shade can't hit invulnerable pokemon anymore and display the correct message when attack is avoided.
+- Rollout and Ice Ball now apply the correct amount of damage considering the different bonuses.
 
 ## Overview
 

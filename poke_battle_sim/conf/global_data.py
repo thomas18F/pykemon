@@ -64,8 +64,6 @@ STATUS_ITEM_CHECK = {'cheri-berry', 'chesto-berry', 'pecha-berry', 'rawst-berry'
 
 ON_HIT_ITEM_CHECK = {'jaboca-berry', 'rowap-berry', 'sticky-barb'}
 
-HOMC_ITEM_CHECK = {'brightpowder', 'lax-incense', 'wide-lens', 'zoom-lens'}
-
 END_TURN_ITEM_CHECK = {'oran-berry', 'sitrus-berry', 'figy-berry', 'wiki-berry', 'mago-berry', 'aguav-berry', 'iapapa-berry', 'leftovers', 'black-sludge', 'toxic-orb', 'flame-orb', 'sticky-barb'}
 
 POST_DAMAGE_ITEM_CHECK = {'shell-bell', 'life-orb'}
@@ -74,4 +72,4 @@ EXTRA_FLINCH_CHECK = {'aerial-ace', 'aeroblast', 'air-cutter', 'air-slash', 'aqu
 
 HEALING_ITEM_CHECK = {'potion': 20, 'hyper-potion': 200, 'super-potion': 50, 'fresh-water': 50, 'soda-pop': 60, 'lemonade': 80, 'moomoo-milk': 100, 'energypowder': 50, 'energy-root': 200, 'berry-juice': 20, 'oran-berry': 10, 'sitrus-berry': 30}
 
-TWO_TURN_CHECK = {'razor-wind', 'fly', 'dig', 'skull-bash', 'sky-attack', 'dive', 'bounce', 'shadow-force', 'bide', 'solar-beam', 'ice-ball', 'thrash', 'petal-dance', 'outrage'}
+TWO_TURN_CHECK = {'skull-bash', 'sky-attack', 'bide', 'solar-beam', 'thrash', 'petal-dance', 'outrage'}

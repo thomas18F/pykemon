@@ -68,7 +68,7 @@ class TestCanUseItem(unittest.TestCase):
         battle = get_default_battle()
         battle.start()
 
-        battle.t1.current_poke.moves[0].cur_pp = 15
+        battle.t1.current_poke.moves[0].current_pp = 15
         result = can_use_item(battle.t1, battle, "leppa-berry", "0", "0")
 
         self.assertTrue(result)
@@ -85,7 +85,7 @@ class TestCanUseItem(unittest.TestCase):
         battle = get_default_battle()
         battle.start()
 
-        battle.t1.current_poke.moves[0].cur_pp = 15
+        battle.t1.current_poke.moves[0].current_pp = 15
         result = can_use_item(battle.t1, battle, "leppa-berry", "0")
 
         self.assertFalse(result)
@@ -94,7 +94,7 @@ class TestCanUseItem(unittest.TestCase):
         battle = get_default_battle()
         battle.start()
 
-        battle.t1.current_poke.moves[0].cur_pp = 15
+        battle.t1.current_poke.moves[0].current_pp = 15
         result = can_use_item(battle.t1, battle, "leppa-berry", "0", "tackle")
 
         self.assertFalse(result)

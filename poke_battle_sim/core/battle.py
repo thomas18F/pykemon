@@ -55,10 +55,8 @@ class Battle:
         self.battlefield = bf.Battlefield(self, terrain=terrain, weather=weather)
 
     def start(self):
-        self.t1.start_pokemon(self)
-        self.t2.start_pokemon(self)
-        self.t1.in_battle = True
-        self.t2.in_battle = True
+        self.t1.start(self)
+        self.t2.start(self)
         self.t1_faint = False
         self.t2_faint = False
         self.battle_started = True
@@ -90,68 +88,68 @@ class Battle:
         if self.is_finished():
             return
 
-        t1_move = t1_turn.copy()
-        t2_move = t2_turn.copy()
+        t1_command = t1_turn.copy()
+        t2_command = t2_turn.copy()
         t1_move_data = None
         t2_move_data = None
         t1_mv_check_bypass = False
         t2_mv_check_bypass = False
 
-        t1_move, t1_move_data, t1_mv_check_bypass = self._pre_process_move(
-            self.t1, [t1_move, t1_move_data, t1_mv_check_bypass]
+        t1_command, t1_move_data, t1_mv_check_bypass = self._pre_process_move(
+            self.t1, [t1_command, t1_move_data, t1_mv_check_bypass]
         )
-        t2_move, t2_move_data, t2_mv_check_bypass = self._pre_process_move(
-            self.t2, [t2_move, t2_move_data, t2_mv_check_bypass]
+        t2_command, t2_move_data, t2_mv_check_bypass = self._pre_process_move(
+            self.t2, [t2_command, t2_move_data, t2_mv_check_bypass]
         )
 
         if (
-            not isinstance(t1_move, list)
-            or not all(isinstance(t1_move[i], str) for i in range(len(t1_move)))
-            or len(t1_move) < 2
-            or t1_move[gs.ACTION_TYPE].lower() not in gs.ACTION_PRIORITY
+            not isinstance(t1_command, list)
+            or not all(isinstance(t1_command[i], str) for i in range(len(t1_command)))
+            or len(t1_command) < 2
+            or t1_command[gs.ACTION_TYPE].lower() not in gs.ACTION_PRIORITY
         ):
             raise Exception("Trainer 1 invalid turn action")
         if (
-            not isinstance(t2_move, list)
-            or not all(isinstance(t2_move[i], str) for i in range(len(t2_move)))
-            or len(t2_move) < 2
-            or t2_move[gs.ACTION_TYPE].lower() not in gs.ACTION_PRIORITY
+            not isinstance(t2_command, list)
+            or not all(isinstance(t2_command[i], str) for i in range(len(t2_command)))
+            or len(t2_command) < 2
+            or t2_command[gs.ACTION_TYPE].lower() not in gs.ACTION_PRIORITY
         ):
             raise Exception("Trainer 2 invalid turn action")
 
         self.t1.has_moved = False
         self.t2.has_moved = False
-        t1_move = [e.lower() for e in t1_move]
-        t2_move = [e.lower() for e in t2_move]
+        t1_command = [e.lower() for e in t1_command]
+        t2_command = [e.lower() for e in t2_command]
         self.t1_fainted = False
         self.t2_fainted = False
         self.t1.current_poke.turn_damage = False
         self.t2.current_poke.turn_damage = False
 
         if (
-            t1_move[gs.ACTION_TYPE] == gd.MOVE
+            t1_command[gs.ACTION_TYPE] == gd.MOVE
             and not t1_mv_check_bypass
-            and not self.t1.current_poke.is_move(t1_move[gs.ACTION_VALUE])
+            and not self.t1.current_poke.is_move(t1_command[gs.ACTION_VALUE])
         ):
             raise Exception("Trainer 1 attempted to use move not in Pokemon's moveset")
         if (
-            t2_move[gs.ACTION_TYPE] == gd.MOVE
+            t2_command[gs.ACTION_TYPE] == gd.MOVE
             and not t2_mv_check_bypass
-            and not self.t2.current_poke.is_move(t2_move[gs.ACTION_VALUE])
+            and not self.t2.current_poke.is_move(t2_command[gs.ACTION_VALUE])
         ):
             raise Exception("Trainer 2 attempted to use move not in Pokemon's moveset")
 
-        if not t1_move_data and t1_move[gs.ACTION_TYPE] == gd.MOVE:
-            t1_move_data = self.t1.current_poke.get_move_data(t1_move[gs.ACTION_VALUE])
+        if not t1_move_data and t1_command[gs.ACTION_TYPE] == gd.MOVE:
+            t1_move_data = self.t1.current_poke.get_move_data(t1_command[gs.ACTION_VALUE])
             if not t1_move_data:
-                t1_move_data = Move(PokeSim.get_single_move(t1_move[gs.ACTION_VALUE]))
-        if not t2_move_data and t2_move[gs.ACTION_TYPE] == gd.MOVE:
-            t2_move_data = self.t2.current_poke.get_move_data(t2_move[gs.ACTION_VALUE])
+                t1_move_data = Move(PokeSim.get_single_move(t1_command[gs.ACTION_VALUE]))
+        if not t2_move_data and t2_command[gs.ACTION_TYPE] == gd.MOVE:
+            t2_move_data = self.t2.current_poke.get_move_data(t2_command[gs.ACTION_VALUE])
             if not t2_move_data:
-                t2_move_data = Move(PokeSim.get_single_move(t2_move[gs.ACTION_VALUE]))
+                t2_move_data = Move(PokeSim.get_single_move(t2_command[gs.ACTION_VALUE]))
 
-        t1_prio = gs.ACTION_PRIORITY[t1_move[gs.ACTION_TYPE]]
-        t2_prio = gs.ACTION_PRIORITY[t2_move[gs.ACTION_TYPE]]
+        t1_prio = gs.ACTION_PRIORITY[t1_command[gs.ACTION_TYPE]]
+        t2_prio = gs.ACTION_PRIORITY[t2_command[gs.ACTION_TYPE]]
         t1_first = t1_prio >= t2_prio
         if t1_prio == 1 and t2_prio == 1:
             if t1_move_data.prio != t2_move_data.prio:
@@ -176,31 +174,31 @@ class Battle:
 
         self.add_text("Turn " + str(self.turn_count) + ":")
 
-        if self._pursuit_check(t1_move, t2_move, t1_move_data, t2_move_data, t1_first):
-            t1_first = t1_move == gd.PURSUIT
+        if self._pursuit_check(t1_command, t2_command, t1_move_data, t2_move_data, t1_first):
+            t1_first = t1_command == gd.PURSUIT
 
         if self._me_first_check(t1_move_data, t2_move_data):
-            t1_first = t1_move == gd.ME_FIRST
+            t1_first = t1_command == gd.ME_FIRST
 
-        self._focus_punch_check(t1_move, t2_move)
+        self._focus_punch_check(t1_command, t2_command)
 
         if t1_first:
             if self.t1.current_poke.is_alive:
                 # trainer 1 turn
-                self._half_turn(self.t1, self.t2, t1_move, t1_move_data)
+                self._half_turn(self.t1, self.t2, t1_command, t1_move_data)
             self._faint_check()
             if self.t2.current_poke.is_alive:
                 # trainer 2 turn
-                self._half_turn(self.t2, self.t1, t2_move, t2_move_data)
+                self._half_turn(self.t2, self.t1, t2_command, t2_move_data)
             self._faint_check()
         else:
             if self.t2.current_poke.is_alive:
                 # trainer 2 turn
-                self._half_turn(self.t2, self.t1, t2_move, t2_move_data)
+                self._half_turn(self.t2, self.t1, t2_command, t2_move_data)
             self._faint_check()
             if self.t1.current_poke.is_alive:
                 # trainer 1 turn
-                self._half_turn(self.t1, self.t2, t1_move, t1_move_data)
+                self._half_turn(self.t1, self.t2, t1_command, t1_move_data)
             self._faint_check()
 
         if self.winner:
@@ -285,7 +283,7 @@ class Battle:
     def _process_pp(self, attacker: pk.Pokemon, move_data: Move) -> bool:
         if move_data.name == "struggle" or attacker.rage or attacker.uproar:
             return True
-        if move_data.cur_pp <= 0:
+        if move_data.current_pp <= 0:
             raise Exception("Trainer attempted to use move that has no pp left")
         is_disabled = move_data.disabled
         attacker.reduce_disabled_count()
@@ -293,13 +291,13 @@ class Battle:
             self.add_text(move_data.name + " is disabled!")
             return False
         if not (move_data.name in gd.TWO_TURN_CHECK and not move_data.ef_stat):
-            move_data.cur_pp -= 1
+            move_data.current_pp -= 1
             self._pressure_check(attacker, move_data)
-        if not move_data.cur_pp and attacker.item == "leppa-berry":
+        if not move_data.current_pp and attacker.item == "leppa-berry":
             pi._eat_item(attacker, self)
             attacker.restore_pp(move_data.name, 10)
         if (
-            move_data.cur_pp == 0
+            move_data.current_pp == 0
             and attacker.copied
             and move_data.name == attacker.copied.name
         ):
@@ -504,8 +502,8 @@ class Battle:
             poke.magic_coat = False
         if poke.snatch:
             poke.snatch = False
-        if poke.sp_check:
-            poke.sp_check = False
+        if poke.sucker_punch_check:
+            poke.sucker_punch_check = False
         if not poke.has_moved:
             poke.has_moved = True
         if poke.v_status[gs.DROWSY]:
@@ -700,7 +698,7 @@ class Battle:
                 and not t1_first
             )
         ):
-            t1_move_data.cur_pp -= 1
+            t1_move_data.current_pp -= 1
             self._pressure_check(self.t1.current_poke, t1_move_data)
             t1_move_data = t1_move_data.get_tcopy()
             t1_move_data.power *= 2
@@ -713,7 +711,7 @@ class Battle:
                 and t1_first
             )
         ):
-            t2_move_data.cur_pp -= 1
+            t2_move_data.current_pp -= 1
             self._pressure_check(self.t2.current_poke, t2_move_data)
             t2_move_data = t2_move_data.get_tcopy()
             t2_move_data.power *= 2
@@ -793,17 +791,17 @@ class Battle:
         if not t1_move_data or not t2_move_data:
             return
         if t1_move_data.name == "sucker-punch" and t2_move_data.category != gs.STATUS:
-            self.t1.current_poke.sp_check = True
+            self.t1.current_poke.sucker_punch_check = True
         if t2_move_data.name == "sucker-punch" and t1_move_data.category != gs.STATUS:
-            self.t1.current_poke.sp_check = True
+            self.t1.current_poke.sucker_punch_check = True
 
     def _pressure_check(self, attacker: pk.Pokemon, move_data: Move):
         if (
-            move_data.cur_pp
+            move_data.current_pp
             and attacker.enemy.current_poke.is_alive
             and attacker.enemy.current_poke.has_ability("pressure")
         ):
-            move_data.cur_pp -= 1
+            move_data.current_pp -= 1
 
     def _prio_boost_check(self, t1_first: bool) -> bool:
         if self.t1.current_poke.prio_boost and self.t2.current_poke.prio_boost:
