@@ -72,4 +72,4 @@ EXTRA_FLINCH_CHECK = {'aerial-ace', 'aeroblast', 'air-cutter', 'air-slash', 'aqu
 
 HEALING_ITEM_CHECK = {'potion': 20, 'hyper-potion': 200, 'super-potion': 50, 'fresh-water': 50, 'soda-pop': 60, 'lemonade': 80, 'moomoo-milk': 100, 'energypowder': 50, 'energy-root': 200, 'berry-juice': 20, 'oran-berry': 10, 'sitrus-berry': 30}
 
-TWO_TURN_CHECK = {'razor-wind', 'skull-bash', 'sky-attack', 'bide', 'solar-beam', 'thrash', 'petal-dance', 'outrage'}
+TWO_TURN_CHECK = {'skull-bash', 'sky-attack', 'bide', 'solar-beam', 'thrash', 'petal-dance', 'outrage'}

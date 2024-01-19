@@ -1355,8 +1355,9 @@ def _ef_021(
         move_data.ef_stat = 1
         attacker.next_moves.put(move_data)
         battle.add_text(attacker.nickname + " whipped up a whirlwind!")
-        return True
-    cc_ib[0] = 1
+    else:
+        cc_ib[0] = 1
+        _calculate_damage(attacker, defender, battlefield, battle, move_data)
 
 
 def _ef_022(

@@ -3810,6 +3810,137 @@ class TestBattle(unittest.TestCase):
         self.assertEqual(3, battle.turn_count)
         self.assertIsNone(battle.winner)
 
+    @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
+    def test_razor_wind(self, mock_calculate_crit, mock_calculate_multiplier):
+        pokemon_1 = Pokemon(1, 22, ["razor-wind"], "male", stats_actual=[100, 100, 100, 100, 100, 100])
+        trainer_1 = Trainer('Ash', [pokemon_1])
+
+        pokemon_2 = Pokemon(4, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
+        trainer_2 = Trainer('Misty', [pokemon_2])
+
+        battle = Battle(trainer_1, trainer_2)
+        battle.start()
+
+        mock_calculate_crit.return_value = False
+        mock_calculate_multiplier.return_value = 1.0
+        battle.turn(["move", "razor-wind"], ["move", "tackle"])
+
+        self.assertEqual(100, pokemon_2.cur_hp)
+        self.assertEqual(9, pokemon_1.moves[0].current_pp)
+
+        battle.turn(["move", "razor-wind"], ["move", "tackle"])
+
+        self.assertEqual(81, pokemon_2.cur_hp)
+        self.assertEqual(9, pokemon_1.moves[0].current_pp)
+
+        expected_battle_text = [
+            'Ash sent out BULBASAUR!',
+            'Misty sent out CHARMANDER!',
+            'Turn 1:',
+            'BULBASAUR used Razor Wind!',
+            'BULBASAUR whipped up a whirlwind!',
+            'CHARMANDER used Tackle!',
+            'Turn 2:',
+            'BULBASAUR used Razor Wind!',
+            'CHARMANDER used Tackle!'
+        ]
+        self.assertEqual(expected_battle_text, battle.get_all_text())
+
+        self.assertTrue(battle.battle_started)
+        self.assertEqual(trainer_1, battle.t1)
+        self.assertEqual(trainer_2, battle.t2)
+        self.assertEqual(2, battle.turn_count)
+        self.assertIsNone(battle.winner)
+
+    @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
+    def test_razor_wind_with_power_herb(self, mock_calculate_crit, mock_calculate_multiplier):
+        pokemon_1 = Pokemon(1, 22, ["razor-wind"], "male", stats_actual=[100, 100, 100, 100, 100, 100], item="power-herb")
+        trainer_1 = Trainer('Ash', [pokemon_1])
+
+        pokemon_2 = Pokemon(4, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
+        trainer_2 = Trainer('Misty', [pokemon_2])
+
+        battle = Battle(trainer_1, trainer_2)
+        battle.start()
+
+        mock_calculate_crit.return_value = False
+        mock_calculate_multiplier.return_value = 1.0
+        battle.turn(["move", "razor-wind"], ["move", "tackle"])
+
+        self.assertEqual(81, pokemon_2.cur_hp)
+        self.assertEqual(9, pokemon_1.moves[0].current_pp)
+
+        expected_battle_text = [
+            'Ash sent out BULBASAUR!',
+            'Misty sent out CHARMANDER!',
+            'Turn 1:',
+            'BULBASAUR used Razor Wind!',
+            'BULBASAUR became fully charged due to its Power Herb!',
+            'CHARMANDER used Tackle!'
+        ]
+        self.assertEqual(expected_battle_text, battle.get_all_text())
+
+        self.assertTrue(battle.battle_started)
+        self.assertEqual(trainer_1, battle.t1)
+        self.assertEqual(trainer_2, battle.t2)
+        self.assertEqual(1, battle.turn_count)
+        self.assertIsNone(battle.winner)
+
+    @patch('poke_battle_sim.util.process_move._calculate_random_multiplier_damage')
+    @patch('poke_battle_sim.util.process_move._calculate_is_critical')
+    def test_razor_wind_with_power_herb_then_without(self, mock_calculate_crit, mock_calculate_multiplier):
+        pokemon_1 = Pokemon(1, 22, ["razor-wind"], "male", stats_actual=[100, 100, 100, 100, 100, 100], item="power-herb")
+        trainer_1 = Trainer('Ash', [pokemon_1])
+
+        pokemon_2 = Pokemon(4, 22, ["tackle"], "male", stats_actual=[100, 100, 100, 100, 100, 1])
+        trainer_2 = Trainer('Misty', [pokemon_2])
+
+        battle = Battle(trainer_1, trainer_2)
+        battle.start()
+
+        mock_calculate_crit.return_value = False
+        mock_calculate_multiplier.return_value = 1.0
+
+        battle.turn(["move", "razor-wind"], ["move", "tackle"])
+
+        self.assertEqual(81, pokemon_2.cur_hp)
+        self.assertEqual(9, pokemon_1.moves[0].current_pp)
+
+        battle.turn(["move", "razor-wind"], ["move", "tackle"])
+
+        self.assertEqual(81, pokemon_2.cur_hp)
+        self.assertEqual(8, pokemon_1.moves[0].current_pp)
+
+        battle.turn(["move", "razor-wind"], ["move", "tackle"])
+
+        self.assertEqual(62, pokemon_2.cur_hp)
+        self.assertEqual(8, pokemon_1.moves[0].current_pp)
+
+        expected_battle_text = [
+            'Ash sent out BULBASAUR!',
+            'Misty sent out CHARMANDER!',
+            'Turn 1:',
+            'BULBASAUR used Razor Wind!',
+            'BULBASAUR became fully charged due to its Power Herb!',
+            'CHARMANDER used Tackle!',
+            'Turn 2:',
+            'BULBASAUR used Razor Wind!',
+            'BULBASAUR whipped up a whirlwind!',
+            'CHARMANDER used Tackle!',
+            'Turn 3:',
+            'BULBASAUR used Razor Wind!',
+            'CHARMANDER used Tackle!'
+        ]
+        self.assertEqual(expected_battle_text, battle.get_all_text())
+
+        self.assertTrue(battle.battle_started)
+        self.assertEqual(trainer_1, battle.t1)
+        self.assertEqual(trainer_2, battle.t2)
+        self.assertEqual(3, battle.turn_count)
+        self.assertIsNone(battle.winner)
+
 
 if __name__ == '__main__':
     unittest.main()
